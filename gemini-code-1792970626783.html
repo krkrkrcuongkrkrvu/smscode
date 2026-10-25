@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SMS Code Tool</title>
+    <style>
+        :root {
+            --bg-color: #f4f5f9;
+            --card-bg: #ffffff;
+            --text-primary: #1f2937;
+            --text-muted: #6b7280;
+            --btn-buy-bg: #6366f1;
+            --btn-buy-hover: #4f46e5;
+            --btn-change-bg: #ef4444;
+            --btn-change-hover: #dc2626;
+            --btn-save-bg: #10b981;
+            --border-dashed: #cbd5e1;
+            --error-color: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 12px;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 420px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        /* Top Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 4px 0;
+        }
+
+        .header-title {
+            font-size: 20px;
+            font-weight: 800;
+            color: #111827;
+            line-height: 1.2;
+        }
+
+        .reload-link {
+            font-size: 13px;
+            color: #4f46e5;
+            text-decoration: underline;
+            cursor: pointer;
+            margin-top: 2px;
+            display: inline-block;
+        }
+
+        .settings-icon-btn {
+            background: none;
+            border: none;
+            font-size: 22px;
+            cursor: pointer;
+            padding: 4px;
+            line-height: 1;
+            opacity: 0.75;
+            transition: opacity 0.2s;
+        }
+
+        .settings-icon-btn:hover {
+            opacity: 1;
+        }
+
+        /* Main Control Card */
+        .control-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 16px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 15px;
+            color: #ffffff;
+            padding: 14px 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: transform 0.1s, opacity 0.2s;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-buy {
+            flex: 2;
+            background-color: var(--btn-buy-bg);
+        }
+
+        .btn-change {
+            flex: 1;
+            background-color: var(--btn-change-bg);
+        }
+
+        /* Status & Error Box */
+        .status-box {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            color: var(--error-color);
+            font-size: 13px;
+            font-weight: 600;
+            text-align: center;
+            padding: 6px;
+            background-color: #fef2f2;
+            border-radius: 8px;
+            word-break: break-word;
+        }
+
+        .status-box.active {
+            display: flex;
+        }
+
+        /* Display Card */
+        .display-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 20px 16px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .field-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .field-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-muted);
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+        }
+
+        .dashed-box {
+            width: 100%;
+            border: 2px dashed var(--border-dashed);
+            border-radius: 10px;
+            padding: 14px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: 700;
+            color: #4f46e5;
+            letter-spacing: 1px;
+            cursor: pointer;
+            background-color: #fafafa;
+            transition: border-color 0.2s, background-color 0.2s;
+            min-height: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+        }
+
+        .dashed-box:hover {
+            border-color: #6366f1;
+            background-color: #f5f3ff;
+        }
+
+        /* Modal Settings */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            z-index: 1000;
+            backdrop-filter: blur(2px);
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            width: 100%;
+            max-width: 380px;
+            padding: 20px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            text-align: center;
+            margin-bottom: 14px;
+        }
+
+        .modal-title {
+            font-size: 17px;
+            font-weight: 800;
+            color: #111827;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .modal-subtitle {
+            font-size: 11px;
+            color: var(--error-color);
+            margin-top: 2px;
+            font-weight: 600;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .form-group.full {
+            grid-column: span 2;
+        }
+
+        .form-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: #374151;
+        }
+
+        .form-input, .form-select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            background: #fff;
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus, .form-select:focus {
+            border-color: #6366f1;
+        }
+
+        .prefix-box {
+            grid-column: span 2;
+            border: 1px dashed #d1d5db;
+            border-radius: 10px;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background-color: #fafafa;
+        }
+
+        .prefix-input {
+            width: 80px;
+            padding: 8px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .checkbox-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #374151;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+        }
+
+        .btn-save {
+            width: 100%;
+            background-color: var(--btn-save-bg);
+            margin-top: 14px;
+            padding: 12px;
+        }
+
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #111827;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transition: transform 0.3s ease;
+            z-index: 2000;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- Header -->
+        <div class="header">
+            <div>
+                <div class="header-title">SMS</div>
+                <a class="reload-link" onclick="location.reload()">Tải lại trang</a>
+            </div>
+            <button class="settings-icon-btn" id="openSettingsBtn" title="Cài đặt">⚙️</button>
+        </div>
+
+        <!-- Main Buttons Card -->
+        <div class="control-card">
+            <div class="button-group">
+                <button class="btn btn-buy" id="buyBtn">
+                    🛒 MUA NGAY
+                </button>
+                <button class="btn btn-change" id="changeBtn">
+                    🔄 ĐỔI SỐ
+                </button>
+            </div>
+            <div class="status-box" id="statusBox">
+                ❌ The requested resource was not found
+            </div>
+        </div>
+
+        <!-- Display Card -->
+        <div class="display-card">
+            <div class="field-group">
+                <div class="field-label">SỐ ĐIỆN THOẠI (Chạm để Copy)</div>
+                <div class="dashed-box" id="phoneBox">---</div>
+            </div>
+
+            <div class="field-group">
+                <div class="field-label">MÃ OTP (Chạm để Copy)</div>
+                <div class="dashed-box" id="otpBox">---</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Settings -->
+    <div class="modal-overlay" id="settingsModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-title">⚙️ THÔNG SỐ HIỆN TẠI</div>
+                <div class="modal-subtitle">(Chỉnh sửa tận gốc trong file code)</div>
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group full">
+                    <label class="form-label">API Key</label>
+                    <input type="password" class="form-input" id="cfgApiKey" value="70faf2d7082d029f8b623bd2d8d3bf192d7a772e7c5a9b8b221652d7c2305e03">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Mã Dịch vụ</label>
+                    <input type="text" class="form-input" id="cfgService" value="lf" placeholder="lf">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">ID Quốc gia</label>
+                    <input type="text" class="form-input" id="cfgCountry" value="33" placeholder="33">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Nhà mạng</label>
+                    <input type="text" class="form-input" id="cfgOperator" value="" placeholder="Mặc định: Any">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Giá chốt cứng ($)</label>
+                    <select class="form-select" id="cfgMaxPrice">
+                        <option value="0.008">$0.008 (Tối ưu kho số)</option>
+                        <option value="0.009">$0.009</option>
+                        <option value="0.010">$0.010</option>
+                        <option value="0.011">$0.011</option>
+                        <option value="0.013">$0.013</option>
+                        <option value="0.014">$0.014</option>
+                        <option value="0.0177" selected>0,0177 (Mặc định)</option>
+                    </select>
+                </div>
+
+                <div class="prefix-box">
+                    <input type="text" class="prefix-input" id="cfgTrimPrefix" value="57" placeholder="57">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="cfgAddZero" checked>
+                        Thêm "0" vào đầu
+                    </label>
+                </div>
+
+                <div class="form-group full">
+                    <label class="form-label">Chuẩn xác thực API</label>
+                    <select class="form-select" id="cfgApiAuth">
+                        <option value="apikey">Chuẩn: ApiKey (Khuyên dùng)</option>
+                        <option value="bearer">Chuẩn: Bearer Token</option>
+                    </select>
+                </div>
+            </div>
+
+            <button class="btn btn-save" id="closeSettingsBtn">
+                💾 ĐÓNG
+            </button>
+        </div>
+    </div>
+
+    <!-- Toast Component -->
+    <div class="toast" id="toast">Đã chép vào bộ nhớ tạm!</div>
+
+    <script>
+        // System state variables
+        let currentOrder = null;
+        let pollTimer = null;
+
+        // Elements
+        const openSettingsBtn = document.getElementById('openSettingsBtn');
+        const closeSettingsBtn = document.getElementById('closeSettingsBtn');
+        const settingsModal = document.getElementById('settingsModal');
+        const buyBtn = document.getElementById('buyBtn');
+        const changeBtn = document.getElementById('changeBtn');
+        const statusBox = document.getElementById('statusBox');
+        const phoneBox = document.getElementById('phoneBox');
+        const otpBox = document.getElementById('otpBox');
+        const toast = document.getElementById('toast');
+
+        // Settings Inputs
+        const cfgApiKey = document.getElementById('cfgApiKey');
+        const cfgService = document.getElementById('cfgService');
+        const cfgCountry = document.getElementById('cfgCountry');
+        const cfgOperator = document.getElementById('cfgOperator');
+        const cfgMaxPrice = document.getElementById('cfgMaxPrice');
+        const cfgTrimPrefix = document.getElementById('cfgTrimPrefix');
+        const cfgAddZero = document.getElementById('cfgAddZero');
+        const cfgApiAuth = document.getElementById('cfgApiAuth');
+
+        // Toast Helper
+        function showToast(msg) {
+            toast.textContent = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        // Show Error Msg
+        function showError(msg) {
+            statusBox.textContent = "❌ " + msg;
+            statusBox.classList.add('active');
+        }
+
+        function clearError() {
+            statusBox.classList.remove('active');
+        }
+
+        // Modal Handlers
+        openSettingsBtn.addEventListener('click', () => {
+            settingsModal.classList.add('active');
+        });
+
+        closeSettingsBtn.addEventListener('click', () => {
+            settingsModal.classList.remove('active');
+            showToast("Đã lưu cài đặt");
+        });
+
+        // Copy functionality
+        phoneBox.addEventListener('click', () => {
+            const text = phoneBox.textContent.trim();
+            if (text && text !== '---') {
+                navigator.clipboard.writeText(text);
+                showToast("Đã sao chép SĐT: " + text);
+            }
+        });
+
+        otpBox.addEventListener('click', () => {
+            const text = otpBox.textContent.trim();
+            if (text && text !== '---') {
+                navigator.clipboard.writeText(text);
+                showToast("Đã sao chép OTP: " + text);
+            }
+        });
+
+        // Process Phone Number Formatting
+        function formatPhoneNumber(rawNumber) {
+            let num = String(rawNumber).replace(/\D/g, '');
+            const trimPrefix = cfgTrimPrefix.value.trim();
+
+            if (trimPrefix && num.startsWith(trimPrefix)) {
+                num = num.substring(trimPrefix.length);
+            }
+
+            if (cfgAddZero.checked && !num.startsWith('0')) {
+                num = '0' + num;
+            }
+
+            return num;
+        }
+
+        // Handle Buy Request
+        buyBtn.addEventListener('click', async () => {
+            clearError();
+            phoneBox.textContent = "Đang lấy...";
+            otpBox.textContent = "---";
+
+            if (pollTimer) clearInterval(pollTimer);
+
+            const apiKey = cfgApiKey.value.trim();
+            const service = cfgService.value.trim() || 'lf';
+            const country = cfgCountry.value.trim() || '33';
+            const maxPrice = cfgMaxPrice.value.trim();
+            const operator = cfgOperator.value.trim();
+
+            if (!apiKey) {
+                // Run Demo Mode if Key is missing
+                setTimeout(() => {
+                    const demoRaw = "5731" + Math.floor(10000000 + Math.random() * 90000000);
+                    const formatted = formatPhoneNumber(demoRaw);
+                    phoneBox.textContent = formatted;
+                    showToast("Đã lấy số (Demo)");
+
+                    // Simulate OTP delay
+                    setTimeout(() => {
+                        const fakeOtp = Math.floor(100000 + Math.random() * 900000);
+                        otpBox.textContent = fakeOtp;
+                        showToast("Đã nhận mã OTP!");
+                    }, 5000);
+                }, 600);
+                return;
+            }
+
+            try {
+                // Call API smscode.gg
+                let url = `https://api.smscode.gg/v1/user/buy?service=${service}&country=${country}&api_key=${apiKey}`;
+                if (maxPrice) url += `&max_price=${maxPrice}`;
+                if (operator) url += `&operator=${operator}`;
+
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${apiKey}`,
+                        'Accept': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok && (data.phone || data.number || data.id)) {
+                    currentOrder = data;
+                    const rawPhone = data.phone || data.number;
+                    phoneBox.textContent = formatPhoneNumber(rawPhone);
+                    showToast("Lấy số thành công!");
+                    
+                    // Start Polling OTP
+                    startPollingOTP(data.id || data.order_id, apiKey);
+                } else {
+                    showError(data.message || data.error || "The requested resource was not found");
+                    phoneBox.textContent = "---";
+                }
+            } catch (err) {
+                showError("The requested resource was not found");
+                phoneBox.textContent = "---";
+            }
+        });
+
+        // Change Phone Number Button
+        changeBtn.addEventListener('click', () => {
+            buyBtn.click();
+        });
+
+        // Poll for OTP
+        function startPollingOTP(orderId, apiKey) {
+            if (!orderId) return;
+
+            pollTimer = setInterval(async () => {
+                try {
+                    const checkUrl = `https://api.smscode.gg/v1/user/sms?id=${orderId}&api_key=${apiKey}`;
+                    const res = await fetch(checkUrl, {
+                        headers: { 'Authorization': `Bearer ${apiKey}` }
+                    });
+                    const data = await res.json();
+
+                    if (data.sms || data.code || data.full_sms) {
+                        otpBox.textContent = data.code || data.sms;
+                        showToast("Đã nhận mã OTP!");
+                        clearInterval(pollTimer);
+                    }
+                } catch (e) {
+                    console.log("Polling error:", e);
+                }
+            }, 3500);
+        }
+    </script>
+</body>
+</html>
