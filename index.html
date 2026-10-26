@@ -143,11 +143,12 @@
     </div>
 
     <script>
-        const API_KEY = "ed8067a560491d024696615e45960a72058f3ced03adf152f5f10a45473c20c2";
+        // API Key mới của bạn
+        const API_KEY = "f18864a9e3bca73be351b55b04233da621b350f2489deb53bd67756361697806";
         const COUNTRY_ID = "33"; // Colombia
         const SERVICE_ID = "lf"; // TikTok / Douyin
         
-        // 👉 THAY LINK CLOUDFLARE WORKER CỦA BẠN VÀO DƯỚI ĐÂY:
+        // Link Cloudflare Worker của bạn
         const WORKER_URL = "https://smsproxy.mimomaq.workers.dev?url=";
         
         let currentOrderId = null;
@@ -168,7 +169,7 @@
             document.getElementById('otp-code').innerText = "---";
             
             try {
-                const targetUrl = `https://api.smscode.gg/stubs/handler_api.php?api_key=${API_KEY}&action=getNumber&service=${SERVICE_ID}&country=${COUNTRY_ID}`;
+                const targetUrl = `https://smscode.gg/stubs/handler_api.php?api_key=${API_KEY}&action=getNumber&service=${SERVICE_ID}&country=${COUNTRY_ID}`;
                 
                 const text = await fetchWithProxy(targetUrl);
                 
@@ -180,75 +181,4 @@
                     // Tự động bỏ đầu số 57 hoặc +57 của Colombia
                     const displayPhone = rawPhone.replace(/^\+?57/, '');
                     
-                    document.getElementById('phone-number').innerText = displayPhone;
-                    document.getElementById('status').innerText = "Đang chờ OTP...";
-                    document.getElementById('status').style.color = "#4caf50";
-                    
-                    pollInterval = setInterval(checkOTP, 5000);
-                } else {
-                    document.getElementById('status').innerText = "Phản hồi: " + text;
-                    document.getElementById('status').style.color = "#ff5252";
-                }
-            } catch (err) {
-                document.getElementById('status').innerText = "Lỗi: " + err.message;
-                document.getElementById('status').style.color = "#ff5252";
-            }
-        }
-
-        async function checkOTP() {
-            if (!currentOrderId) return;
-            try {
-                const targetUrl = `https://api.smscode.gg/stubs/handler_api.php?api_key=${API_KEY}&action=getStatus&id=${currentOrderId}`;
-                const text = await fetchWithProxy(targetUrl);
-                
-                if (text.startsWith("STATUS_OK")) {
-                    const otpCode = text.split(":")[1];
-                    document.getElementById('otp-code').innerText = otpCode;
-                    document.getElementById('status').innerText = "Đã nhận mã OTP!";
-                    document.getElementById('status').style.color = "#4caf50";
-                    clearInterval(pollInterval); 
-                } else if (text === "STATUS_CANCEL") {
-                    document.getElementById('status').innerText = "Đơn hàng đã bị hủy";
-                    document.getElementById('status').style.color = "#ff5252";
-                    clearInterval(pollInterval);
-                }
-            } catch (err) {
-                console.error("Lỗi khi kiểm tra mã OTP", err);
-            }
-        }
-
-        async function changeNumber() {
-            if (pollInterval) {
-                clearInterval(pollInterval);
-                pollInterval = null;
-            }
-            
-            if (currentOrderId) {
-                try {
-                    const targetUrl = `https://api.smscode.gg/stubs/handler_api.php?api_key=${API_KEY}&action=setStatus&status=8&id=${currentOrderId}`;
-                    fetchWithProxy(targetUrl); 
-                } catch (e) {
-                    console.error("Lỗi khi báo hủy", e);
-                }
-                currentOrderId = null;
-            }
-            
-            document.getElementById('status').innerText = "Sẵn sàng";
-            document.getElementById('status').style.color = "#ff5252";
-            document.getElementById('phone-number').innerText = "---";
-            document.getElementById('otp-code').innerText = "---";
-        }
-
-        function copyText(elementId) {
-            const text = document.getElementById(elementId).innerText;
-            if (text && text !== "---") {
-                navigator.clipboard.writeText(text).then(() => {
-                    alert("Đã copy: " + text);
-                }).catch(err => {
-                    console.error('Lỗi sao chép:', err);
-                });
-            }
-        }
-    </script>
-</body>
-</html>
+                    document.getElementById('phone-number').innerText = display
