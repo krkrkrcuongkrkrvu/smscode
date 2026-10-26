@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SMS Code - Lấy Số Colombia</title>
+    <title>SMS Code - Lấy Số Colombia (v2)</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -11,7 +11,6 @@
             margin: 0;
             padding: 20px;
         }
-        /* Header style */
         .header {
             display: flex;
             justify-content: space-between;
@@ -34,8 +33,6 @@
             color: #555;
             cursor: pointer;
         }
-        
-        /* Card chung */
         .card {
             background-color: #ffffff;
             border-radius: 12px;
@@ -43,8 +40,6 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.05);
             margin-bottom: 20px;
         }
-
-        /* Group Buttons */
         .btn-container {
             display: flex;
             gap: 12px;
@@ -78,8 +73,6 @@
             font-weight: 500;
             margin-top: 10px;
         }
-
-        /* Thông tin số và OTP */
         .data-box {
             border: 2px dashed #e0e0e0;
             border-radius: 12px;
@@ -143,21 +136,31 @@
     </div>
 
     <script>
-        // API Key mới của bạn
         const API_KEY = "f18864a9e3bca73be351b55b04233da621b350f2489deb53bd67756361697806";
-        const COUNTRY_ID = "33"; // Colombia
-        const SERVICE_ID = "lf"; // TikTok / Douyin
-        
-        // Link Cloudflare Worker của bạn
         const WORKER_URL = "https://smsproxy.mimomaq.workers.dev?url=";
         
         let currentOrderId = null;
         let pollInterval = null;
 
-        async function fetchWithProxy(targetUrl) {
-            const response = await fetch(WORKER_URL + encodeURIComponent(targetUrl));
+        // Hàm gọi API v2 qua Worker
+        async function callApi(endpoint, method = "GET", bodyData = null) {
+            const targetUrl = `https://api.smscode.gg/v2${endpoint}`;
+            const proxyUrl = WORKER_URL + encodeURIComponent(targetUrl);
+            
+            const options = {
+                method: method,
+                headers: {
+                    "Authorization": `Bearer ${API_KEY}`,
+                    "Content-Type": "application/json"
+                }
+            };
+            if (bodyData) {
+                options.body = JSON.stringify(bodyData);
+            }
+
+            const response = await fetch(proxyUrl, options);
             if (!response.ok) throw new Error(`Lỗi HTTP: ${response.status}`);
-            return await response.text();
+            return await response.json();
         }
 
         async function buyNumber() {
@@ -169,16 +172,91 @@
             document.getElementById('otp-code').innerText = "---";
             
             try {
-                const targetUrl = `https://smscode.gg/stubs/handler_api.php?api_key=${API_KEY}&action=getNumber&service=${SERVICE_ID}&country=${COUNTRY_ID}`;
+                // Tạo đơn theo cấu trúc v2 (Ví dụ: chọn catalog/product cho TikTok ở Colombia giá 0.013)
+                // Bạn có thể thay đổi product_id hoặc catalog_product_id tùy theo tài liệu v2 của bạn
+                const payload = {
+                    country_id: 33, // Colombia
+                    product_id: "lf", // TikTok / Douyin
+                    max_price: 0.013
+                };
+
+                const res = await callApi("/orders/create", "POST", payload);
                 
-                const text = await fetchWithProxy(targetUrl);
-                
-                if (text.startsWith("ACCESS_NUMBER")) {
-                    const parts = text.split(":");
-                    currentOrderId = parts[1];
-                    const rawPhone = parts[2]; // Ví dụ: 573001234567
+                if (res && res.id && res.phone) {
+                    currentOrderId = res.id;
+                    const rawPhone = res.phone; // VD: 573001234567
                     
                     // Tự động bỏ đầu số 57 hoặc +57 của Colombia
                     const displayPhone = rawPhone.replace(/^\+?57/, '');
                     
-                    document.getElementById('phone-number').innerText = display
+                    document.getElementById('phone-number').innerText = displayPhone;
+                    document.getElementById('status').innerText = "Đang chờ OTP...";
+                    document.getElementById('status').style.color = "#4caf50";
+                    
+                    pollInterval = setInterval(checkOTP, 5000);
+                } else {
+                    document.getElementById('status').innerText = "Phản hồi: " + JSON.stringify(res);
+                    document.getElementById('status').style.color = "#ff5252";
+                }
+            } catch (err) {
+                document.getElementById('status').innerText = "Lỗi: " + err.message;
+                document.getElementById('status').style.color = "#ff5252";
+            }
+        }
+
+        async function checkOTP() {
+            if (!currentOrderId) return;
+            try {
+                const res = await callApi(`/orders/${currentOrderId}`, "GET");
+                
+                // Kiểm tra trạng thái và mã OTP trả về từ JSON v2
+                if (res && res.status === "completed" || res.sms_code) {
+                    const otpCode = res.sms_code || res.code;
+                    document.getElementById('otp-code').innerText = otpCode;
+                    document.getElementById('status').innerText = "Đã nhận mã OTP!";
+                    document.getElementById('status').style.color = "#4caf50";
+                    clearInterval(pollInterval); 
+                } else if (res && res.status === "cancelled") {
+                    document.getElementById('status').innerText = "Đơn hàng đã bị hủy";
+                    document.getElementById('status').style.color = "#ff5252";
+                    clearInterval(pollInterval);
+                }
+            } catch (err) {
+                console.error("Lỗi khi kiểm tra mã OTP", err);
+            }
+        }
+
+        async function changeNumber() {
+            if (pollInterval) {
+                clearInterval(pollInterval);
+                pollInterval = null;
+            }
+            
+            if (currentOrderId) {
+                try {
+                    await callApi(`/orders/cancel`, "POST", { id: currentOrderId });
+                } catch (e) {
+                    console.error("Lỗi khi hủy đơn", e);
+                }
+                currentOrderId = null;
+            }
+            
+            document.getElementById('status').innerText = "Sẵn sàng";
+            document.getElementById('status').style.color = "#ff5252";
+            document.getElementById('phone-number').innerText = "---";
+            document.getElementById('otp-code').innerText = "---";
+        }
+
+        function copyText(elementId) {
+            const text = document.getElementById(elementId).innerText;
+            if (text && text !== "---") {
+                navigator.clipboard.writeText(text).then(() => {
+                    alert("Đã copy: " + text);
+                }).catch(err => {
+                    console.error('Lỗi sao chép:', err);
+                });
+            }
+        }
+    </script>
+</body>
+</html>
