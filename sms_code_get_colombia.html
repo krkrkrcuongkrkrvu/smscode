@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="vi" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMS Code - Colombia ($0.013)</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        darkbg: '#0b0f19',
+                        cardbg: '#131c2e',
+                        bordercolor: '#1e293b',
+                        neonred: '#ff3b3b',
+                        neongreen: '#00f2fe',
+                        neonpurple: '#7928ca',
+                        primary: '#6366f1'
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0b0f19;
+            color: #f8fafc;
+        }
+        .glow-box {
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.15);
+        }
+        .glow-button:hover {
+            box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-start p-4 sm:p-6">
+
+    <!-- Top Header -->
+    <header class="w-full max-w-md flex items-center justify-between mb-6 px-2">
+        <div class="flex items-center space-x-2">
+            <h1 class="text-xl font-bold tracking-wider text-white">SMS CODE <span class="text-xs px-2 py-0.5 bg-indigo-600 rounded-full text-indigo-100">CO $0.013</span></h1>
+        </div>
+        <div class="flex items-center space-x-3">
+            <button id="balanceBtn" onclick="checkBalance()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg border border-slate-700 transition flex items-center gap-1.5">
+                <i class="fa-solid fa-wallet text-indigo-400"></i> <span id="balanceText">Balance: ...</span>
+            </button>
+            <button onclick="openSettings()" class="w-9 h-9 rounded-full bg-slate-800 hover:bg-slate-700 border border-slate-700 flex items-center justify-center text-slate-300 transition">
+                <i class="fa-solid fa-gear"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="w-full max-w-md bg-cardbg border border-bordercolor rounded-2xl p-5 shadow-2xl glow-box flex flex-col space-y-6">
+
+        <!-- Action Buttons Row (MUA NGAY / ĐỔI SỐ) -->
+        <div class="grid grid-cols-2 gap-3">
+            <button id="buyBtn" onclick="buyNumber()" class="relative group overflow-hidden bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-semibold py-3.5 px-4 rounded-xl shadow-lg transition duration-200 flex items-center justify-center space-x-2">
+                <i class="fa-solid fa-cart-shopping"></i>
+                <span>MUA NGAY</span>
+            </button>
+            <button id="changeBtn" onclick="cancelOrChangeNumber()" disabled class="bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 text-white font-semibold py-3.5 px-4 rounded-xl shadow-lg transition duration-200 flex items-center justify-center space-x-2 opacity-50 cursor-not-allowed">
+                <i class="fa-solid fa-rotate"></i>
+                <span>ĐỔI SỐ</span>
+            </button>
+        </div>
+
+        <!-- Status Indicator -->
+        <div class="text-center">
+            <span id="statusBadge" class="inline-block text-sm font-medium px-4 py-1.5 rounded-full bg-slate-800/80 text-emerald-400 border border-emerald-500/30">
+                <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse mr-1.5"></span> Sẵn sàng
+            </span>
+        </div>
+
+        <!-- Phone Number Display Card -->
+        <div onclick="copyText('phoneDisplay', 'Số điện thoại')" class="bg-slate-900/80 hover:bg-slate-900 border border-dashed border-slate-700 hover:border-indigo-500/50 rounded-xl p-4 text-center cursor-pointer transition group relative">
+            <div class="text-xs uppercase font-medium text-slate-400 mb-1 flex items-center justify-center gap-1">
+                <span>SỐ ĐIỆN THOẠI (Chạm để Copy)</span>
+                <i class="fa-regular fa-copy text-slate-500 group-hover:text-indigo-400 transition"></i>
+            </div>
+            <div id="phoneDisplay" class="text-2xl sm:text-3xl font-bold tracking-wider text-indigo-300">---</div>
+        </div>
+
+        <!-- OTP Code Display Card -->
+        <div onclick="copyText('otpDisplay', 'Mã OTP')" class="bg-slate-900/80 hover:bg-slate-900 border border-dashed border-slate-700 hover:border-emerald-500/50 rounded-xl p-4 text-center cursor-pointer transition group relative">
+            <div class="text-xs uppercase font-medium text-slate-400 mb-1 flex items-center justify-center gap-1">
+                <span>MÃ OTP (Chạm để Copy)</span>
+                <i class="fa-regular fa-copy text-slate-500 group-hover:text-emerald-400 transition"></i>
+            </div>
+            <div id="otpDisplay" class="text-2xl sm:text-3xl font-bold tracking-wider text-emerald-400">---</div>
+        </div>
+
+        <!-- Timer & Additional Info -->
+        <div id="timerContainer" class="hidden flex items-center justify-between text-xs text-slate-400 px-1">
+            <span>Thời gian chờ: <strong id="timerCountdown" class="text-indigo-400">20:00</strong></span>
+            <span id="serviceInfo" class="text-slate-500">Colombia | $0.013</span>
+        </div>
+
+    </main>
+
+    <!-- Footer Notes -->
+    <footer class="mt-8 text-center text-xs text-slate-500">
+        <p>Đầu số quốc gia <span class="text-slate-400 font-semibold">+57</span> đã được tự động loại bỏ theo yêu cầu.</p>
+        <p class="mt-1">API Token: <code class="text-slate-400">ed8067a5...3c20c2</code></p>
+    </footer>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+        <div class="bg-cardbg border border-bordercolor rounded-2xl w-full max-w-sm p-6 shadow-2xl space-y-4">
+            <h3 class="text-lg font-bold text-white flex items-center justify-between">
+                <span>Cấu hình API</span>
+                <button onclick="closeSettings()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </h3>
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">API Token</label>
+                    <input type="text" id="apiKeyInput" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-200 focus:outline-none focus:border-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">Service Code (mặc định ttok / tiktok hoặc tùy chọn)</label>
+                    <input type="text" id="serviceInput" value="ttok" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-200 focus:outline-none focus:border-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">Country</label>
+                    <input type="text" id="countryInput" value="co" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-200 focus:outline-none focus:border-indigo-500" disabled>
+                </div>
+            </div>
+            <div class="flex justify-end space-x-2 pt-2">
+                <button onclick="closeSettings()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-sm transition">Đóng</button>
+                <button onclick="saveSettings()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-sm transition">Lưu</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed bottom-5 right-5 bg-slate-800 border border-slate-700 text-white px-4 py-3 rounded-xl shadow-2xl transform translate-y-20 opacity-0 transition-all duration-300 flex items-center space-x-2 z-50">
+        <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400"></i>
+        <span id="toastMsg" class="text-sm font-medium">Thông báo</span>
+    </div>
+
+    <!-- JavaScript Logic & API Integration -->
+    <script>
+        // Configuration state
+        let config = {
+            token: "ed8067a560491d024696615e45960a72058f3ced03adf152f5f10a45473c20c2",
+            service: "ttok",
+            country: "co" // Colombia
+        };
+
+        // App state
+        let currentActivationId = null;
+        let fullPhoneNumber = "";
+        let pollInterval = null;
+        let timerInterval = null;
+        let timeLeft = 1200; // 20 minutes
+
+        // Initialize on load
+        window.onload = function() {
+            document.getElementById('apiKeyInput').value = config.token;
+            checkBalance();
+        };
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toastMsg');
+            const toastIcon = document.getElementById('toastIcon');
+
+            toastMsg.innerText = message;
+            if (type === 'success') {
+                toastIcon.className = "fa-solid fa-circle-check text-emerald-400";
+            } else {
+                toastIcon.className = "fa-solid fa-triangle-exclamation text-amber-400";
+            }
+
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+
+        function copyText(elementId, label) {
+            const text = document.getElementById(elementId).innerText;
+            if (text === '---' || !text) return;
+
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(() => {
+                    showToast(`Đã sao chép ${label}!`);
+                }).catch(() => {
+                    fallbackCopy(text, label);
+                });
+            } else {
+                fallbackCopy(text, label);
+            }
+        }
+
+        function fallbackCopy(text, label) {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                showToast(`Đã sao chép ${label}!`);
+            } catch (err) {
+                showToast(`Không thể sao chép ${label}`, 'error');
+            }
+            document.body.removeChild(textArea);
+        }
+
+        async function apiCall(action, params = {}) {
+            params.token = config.token;
+            params.action = action;
+            
+            // Construct query string for smscode.gg API standard handler
+            const queryString = new URLSearchParams(params).toString();
+            const url = `https://smscode.gg/stubs/handler_api.php?${queryString}`;
+
+            // Direct real fetch without simulation fallback
+            const response = await fetch(url);
+            const text = await response.text();
+            return text.trim();
+        }
+
+        // Removed simulation fallback function entirely to ensure 100% real API interaction
+
+        async function checkBalance() {
+            try {
+                const res = await apiCall('getBalance');
+                if (res.startsWith('ACCESS_BALANCE')) {
+                    const balance = res.split(':')[1];
+                    document.getElementById('balanceText').innerText = `$${balance}`;
+                } else {
+                    document.getElementById('balanceText').innerText = res;
+                }
+            } catch (e) {
+                document.getElementById('balanceText').innerText = `Lỗi kết nối`;
+            }
+        }
+
+        async function buyNumber() {
+            setLoadingState(true);
+            setStatus("Đang mua số Colombia...", "text-amber-400", "bg-amber-500/20 border-amber-500/30");
+
+            try {
+                const res = await apiCall('getNumber', {
+                    service: config.service,
+                    country: config.country
+                });
+
+                if (res.startsWith('ACCESS_NUMBER')) {
+                    const parts = res.split(':');
+                    currentActivationId = parts[1];
+                    fullPhoneNumber = parts[2];
+
+                    // REQUIREMENT: Remove country code '57' if present at start
+                    let displayNum = fullPhoneNumber;
+                    if (displayNum.startsWith('57')) {
+                        displayNum = displayNum.substring(2);
+                    }
+
+                    document.getElementById('phoneDisplay').innerText = displayNum;
+                    document.getElementById('otpDisplay').innerText = "---";
+
+                    setStatus("Sẵn sàng nhận SMS thực tế", "text-emerald-400", "bg-emerald-500/20 border-emerald-500/30");
+                    showToast("Thuê số thành công!");
+
+                    enableActiveOrderUI(true);
+                    startPolling();
+                    startTimer();
+                } else {
+                    setStatus("Lỗi: " + res, "text-rose-400", "bg-rose-500/20 border-rose-500/30");
+                    showToast("Không thể thuê số: " + res, "error");
+                    setLoadingState(false);
+                }
+            } catch (e) {
+                setStatus("Lỗi kết nối API thực tế", "text-rose-400", "bg-rose-500/20 border-rose-500/30");
+                showToast("Lỗi kết nối server API!", "error");
+                setLoadingState(false);
+            }
+        }
+
+        async function cancelOrChangeNumber() {
+            if (!currentActivationId) return;
+
+            stopPolling();
+            stopTimer();
+
+            try {
+                await apiCall('setStatus', { id: currentActivationId, status: 8 }); // 8 = cancel
+            } catch (e) {
+                console.log("Cancel error ignored");
+            }
+
+            currentActivationId = null;
+            fullPhoneNumber = "";
+            document.getElementById('phoneDisplay').innerText = "---";
+            document.getElementById('otpDisplay').innerText = "---";
+            setStatus("Đã hủy số cũ", "text-slate-400", "bg-slate-800/80 border-slate-700");
+            enableActiveOrderUI(false);
+            showToast("Đã đổi số mới!");
+            buyNumber();
+        }
+
+        function startPolling() {
+            if (pollInterval) clearInterval(pollInterval);
+
+            pollInterval = setInterval(async () => {
+                if (!currentActivationId) return;
+
+                try {
+                    const res = await apiCall('getStatus', { id: currentActivationId });
+                    
+                    if (res.startsWith('STATUS_OK')) {
+                        const otpCode = res.split(':')[1];
+                        document.getElementById('otpDisplay').innerText = otpCode;
+                        setStatus("Đã nhận mã OTP thực tế!", "text-emerald-400", "bg-emerald-500/20 border-emerald-500/30");
+                        showToast("Đã nhận mã OTP thành công!");
+                        stopPolling();
+                        stopTimer();
+                    } else if (res === 'STATUS_CANCEL') {
+                        setStatus("Số đã bị hủy trên hệ thống", "text-rose-400", "bg-rose-500/20 border-rose-500/30");
+                        stopPolling();
+                        stopTimer();
+                    }
+                } catch (e) {
+                    console.error("Polling error:", e);
+                }
+            }, 3000);
+        }
+
+        function stopPolling() {
+            if (pollInterval) {
+                clearInterval(pollInterval);
+                pollInterval = null;
+            }
+        }
+
+        function startTimer() {
+            timeLeft = 1200;
+            document.getElementById('timerContainer').classList.remove('hidden');
+            if (timerInterval) clearInterval(timerInterval);
+
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                document.getElementById('timerCountdown').innerText = 
+                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+                if (timeLeft <= 0) {
+                    stopTimer();
+                    stopPolling();
+                    setStatus("Hết thời gian chờ số", "text-amber-400", "bg-amber-500/20 border-amber-500/30");
+                }
+            }, 1000);
+        }
+
+        function stopTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+            document.getElementById('timerContainer').classList.add('hidden');
+        }
+
+        function setStatus(text, textColorClass, badgeClass) {
+            const badge = document.getElementById('statusBadge');
+            badge.className = `inline-block text-sm font-medium px-4 py-1.5 rounded-full border ${badgeClass} ${textColorClass}`;
+            badge.innerHTML = `<span class="inline-block w-2 h-2 rounded-full ${textColorClass.includes('emerald') ? 'bg-emerald-400' : 'bg-amber-400'} animate-pulse mr-1.5"></span> ${text}`;
+        }
+
+        function setLoadingState(loading) {
+            const btn = document.getElementById('buyBtn');
+            if (loading) {
+                btn.disabled = true;
+                btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>Đang xử lý...</span>`;
+            } else {
+                btn.disabled = false;
+                btn.innerHTML = `<i class="fa-solid fa-cart-shopping"></i> <span>MUA NGAY</span>`;
+            }
+        }
+
+        function enableActiveOrderUI(active) {
+            setLoadingState(false);
+            const changeBtn = document.getElementById('changeBtn');
+            if (active) {
+                changeBtn.disabled = false;
+                changeBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            } else {
+                changeBtn.disabled = true;
+                changeBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+        }
+
+        function openSettings() {
+            document.getElementById('settingsModal').classList.remove('hidden');
+            document.getElementById('settingsModal').classList.add('flex');
+        }
+
+        function closeSettings() {
+            document.getElementById('settingsModal').classList.remove('flex');
+            document.getElementById('settingsModal').classList.add('hidden');
+        }
+
+        function saveSettings() {
+            config.token = document.getElementById('apiKeyInput').value.trim();
+            config.service = document.getElementById('serviceInput').value.trim() || 'ttok';
+            closeSettings();
+            showToast("Đã lưu cấu hình API!");
+            checkBalance();
+        }
+    </script>
+
+</body>
+</html>
