@@ -68,10 +68,12 @@
         }
         .status {
             text-align: center;
-            font-size: 14px;
+            font-size: 13px;
             color: #ff5252;
             font-weight: 500;
             margin-top: 10px;
+            word-break: break-all;
+            padding: 0 10px;
         }
         .data-box {
             border: 2px dashed #e0e0e0;
@@ -142,7 +144,6 @@
         let currentOrderId = null;
         let pollInterval = null;
 
-        // Hàm gọi API v2 qua Worker
         async function callApi(endpoint, method = "GET", bodyData = null) {
             const targetUrl = `https://api.smscode.gg/v2${endpoint}`;
             const proxyUrl = WORKER_URL + encodeURIComponent(targetUrl);
@@ -151,7 +152,8 @@
                 method: method,
                 headers: {
                     "Authorization": `Bearer ${API_KEY}`,
-                    "Content-Type": "application/json"
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
                 }
             };
             if (bodyData) {
@@ -159,8 +161,19 @@
             }
 
             const response = await fetch(proxyUrl, options);
-            if (!response.ok) throw new Error(`Lỗi HTTP: ${response.status}`);
-            return await response.json();
+            const responseText = await response.text();
+            
+            let data;
+            try {
+                data = JSON.parse(responseText);
+            } catch (e) {
+                data = { message: responseText };
+            }
+
+            if (!response.ok) {
+                throw new Error(data.message || data.error || JSON.stringify(data));
+            }
+            return data;
         }
 
         async function buyNumber() {
@@ -172,21 +185,19 @@
             document.getElementById('otp-code').innerText = "---";
             
             try {
-                // Tạo đơn theo cấu trúc v2 (Ví dụ: chọn catalog/product cho TikTok ở Colombia giá 0.013)
-                // Bạn có thể thay đổi product_id hoặc catalog_product_id tùy theo tài liệu v2 của bạn
+                // Thử gửi payload tạo đơn theo chuẩn v2
                 const payload = {
-                    country_id: 33, // Colombia
-                    product_id: "lf", // TikTok / Douyin
+                    country_id: 33,
+                    product_id: "lf",
                     max_price: 0.013
                 };
 
                 const res = await callApi("/orders/create", "POST", payload);
                 
-                if (res && res.id && res.phone) {
-                    currentOrderId = res.id;
-                    const rawPhone = res.phone; // VD: 573001234567
+                if (res && (res.id || res.order_id)) {
+                    currentOrderId = res.id || res.order_id;
+                    const rawPhone = res.phone || res.number; 
                     
-                    // Tự động bỏ đầu số 57 hoặc +57 của Colombia
                     const displayPhone = rawPhone.replace(/^\+?57/, '');
                     
                     document.getElementById('phone-number').innerText = displayPhone;
@@ -196,10 +207,9 @@
                     pollInterval = setInterval(checkOTP, 5000);
                 } else {
                     document.getElementById('status').innerText = "Phản hồi: " + JSON.stringify(res);
-                    document.getElementById('status').style.color = "#ff5252";
                 }
             } catch (err) {
-                document.getElementById('status').innerText = "Lỗi: " + err.message;
+                document.getElementById('status').innerText = "Lỗi từ Server: " + err.message;
                 document.getElementById('status').style.color = "#ff5252";
             }
         }
@@ -209,8 +219,7 @@
             try {
                 const res = await callApi(`/orders/${currentOrderId}`, "GET");
                 
-                // Kiểm tra trạng thái và mã OTP trả về từ JSON v2
-                if (res && res.status === "completed" || res.sms_code) {
+                if (res && (res.status === "completed" || res.sms_code || res.code)) {
                     const otpCode = res.sms_code || res.code;
                     document.getElementById('otp-code').innerText = otpCode;
                     document.getElementById('status').innerText = "Đã nhận mã OTP!";
