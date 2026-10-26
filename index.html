@@ -144,15 +144,15 @@
 
     <script>
         const API_KEY = "ed8067a560491d024696615e45960a72058f3ced03adf152f5f10a45473c20c2";
-        const COUNTRY_ID = "33"; 
-        const SERVICE_ID = "lf"; 
+        const COUNTRY_ID = "33"; // Colombia
+        const SERVICE_ID = "lf"; // TikTok / Douyin
         
         let currentOrderId = null;
         let pollInterval = null;
 
-        // Hàm bọc url qua CORS Proxy
+        // Sử dụng corsproxy.io để vượt lỗi CORS ổn định cho text API
         function getProxyUrl(targetUrl) {
-            return `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
+            return `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
         }
 
         async function buyNumber() {
@@ -166,15 +166,17 @@
             try {
                 const targetUrl = `https://api.smscode.gg/stubs/handler_api.php?api_key=${API_KEY}&action=getNumber&service=${SERVICE_ID}&country=${COUNTRY_ID}`;
                 
-                // Gọi API thông qua Proxy trung gian
                 const response = await fetch(getProxyUrl(targetUrl));
+                if (!response.ok) throw new Error(`Lỗi HTTP: ${response.status}`);
+                
                 const text = await response.text();
                 
                 if (text.startsWith("ACCESS_NUMBER")) {
                     const parts = text.split(":");
                     currentOrderId = parts[1];
-                    const rawPhone = parts[2]; 
+                    const rawPhone = parts[2]; // Ví dụ: 573001234567
                     
+                    // Tự động bỏ đầu số 57 hoặc +57 của Colombia
                     const displayPhone = rawPhone.replace(/^\+?57/, '');
                     
                     document.getElementById('phone-number').innerText = displayPhone;
@@ -183,11 +185,11 @@
                     
                     pollInterval = setInterval(checkOTP, 5000);
                 } else {
-                    document.getElementById('status').innerText = "Lỗi từ server: " + text;
+                    document.getElementById('status').innerText = "Phản hồi: " + text;
                     document.getElementById('status').style.color = "#ff5252";
                 }
             } catch (err) {
-                document.getElementById('status').innerText = "Lỗi CORS/Mạng. Xem console để biết chi tiết.";
+                document.getElementById('status').innerText = "Lỗi: " + err.message;
                 console.error(err);
             }
         }
@@ -197,6 +199,8 @@
             try {
                 const targetUrl = `https://api.smscode.gg/stubs/handler_api.php?api_key=${API_KEY}&action=getStatus&id=${currentOrderId}`;
                 const response = await fetch(getProxyUrl(targetUrl));
+                if (!response.ok) return;
+                
                 const text = await response.text();
                 
                 if (text.startsWith("STATUS_OK")) {
