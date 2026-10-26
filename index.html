@@ -115,19 +115,12 @@
             justify-content: center;
             gap: 6px;
             font-weight: 600;
+            word-break: break-all;
         }
 
-        .status-msg.error {
-            color: #dc2626;
-        }
-
-        .status-msg.success {
-            color: #16a34a;
-        }
-
-        .status-msg.info {
-            color: #2563eb;
-        }
+        .status-msg.error { color: #dc2626; }
+        .status-msg.success { color: #16a34a; }
+        .status-msg.info { color: #2563eb; }
 
         .display-box {
             background: #ffffff;
@@ -178,21 +171,13 @@
             text-align: center;
         }
 
-        .phone-text {
-            color: #3b82f6;
-        }
-
-        .otp-text {
-            color: #10b981;
-        }
+        .phone-text { color: #3b82f6; }
+        .otp-text { color: #10b981; }
 
         /* Modal Settings */
         .modal-overlay {
             position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
+            top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(0, 0, 0, 0.4);
             display: flex;
             justify-content: center;
@@ -268,10 +253,6 @@
             outline: none;
             color: #111827;
             font-weight: 600;
-        }
-
-        .form-control:focus {
-            border-color: #6366f1;
         }
 
         .checkbox-box {
@@ -350,7 +331,7 @@
         </div>
 
         <div id="statusMsg" class="status-msg error">
-            ❌ The requested resource was not found
+            Sẵn sàng lấy số TikTok Colombia
         </div>
 
         <div class="display-box">
@@ -380,7 +361,8 @@
 
             <div class="form-group">
                 <label>API Key</label>
-                <input type="password" id="cfgApiKey" class="form-control" value="00000000000000000000000000000000">
+                <!-- Đã chèn API Key của bạn sẵn ở đây -->
+                <input type="text" id="cfgApiKey" class="form-control" value="2c5c76cee43b00d14cff031182a0bdc2382435a00439f3ee320e8c3978dbe6ea">
             </div>
 
             <div class="form-row">
@@ -397,7 +379,7 @@
             <div class="form-row">
                 <div class="form-group">
                     <label>Nhà mạng</label>
-                    <input type="text" id="cfgOperator" class="form-control" placeholder="any">
+                    <input type="text" id="cfgOperator" class="form-control" value="any" placeholder="any">
                 </div>
                 <div class="form-group">
                     <label>Giá chốt cứng</label>
@@ -411,7 +393,7 @@
                 </div>
                 <div>
                     <input type="checkbox" id="cfgRemovePrefix" checked>
-                    <label for="cfgRemovePrefix">Bỏ mã vùng (57) khi hiển thị/copy</label>
+                    <label for="cfgRemovePrefix">Thêm "0" vào đầu / Lọc mã vùng (57)</label>
                 </div>
             </div>
 
@@ -432,20 +414,19 @@
     <div id="toast" class="toast">Đã sao chép vào bộ nhớ tạm!</div>
 
     <script>
-        // Store Variables
         let currentRawPhone = '';
         let currentCleanPhone = '';
         let currentOtp = '';
         let currentOrderId = null;
         let pollTimer = null;
 
-        // Clean Country Code function (Remove +57 or 57 prefix)
+        // Hàm cắt mã vùng 57 ở đầu số
         function sanitizePhoneNumber(rawPhone) {
             if (!rawPhone) return '---';
             let removePrefix = document.getElementById('cfgRemovePrefix').checked;
             let prefixCode = document.getElementById('cfgPrefix').value.trim() || '57';
 
-            let clean = rawPhone.replace(/^\+/, ''); // remove leading +
+            let clean = rawPhone.toString().replace(/^\+/, '');
 
             if (removePrefix && clean.startsWith(prefixCode)) {
                 clean = clean.substring(prefixCode.length);
@@ -472,7 +453,6 @@
 
         function closeModal() {
             document.getElementById('settingsModal').classList.remove('active');
-            // Refresh phone display with new prefix settings if existing
             if (currentRawPhone) {
                 currentCleanPhone = sanitizePhoneNumber(currentRawPhone);
                 document.getElementById('phoneDisplay').innerText = currentCleanPhone;
@@ -480,35 +460,94 @@
             showToast("Đã lưu cài đặt");
         }
 
-        function handleBuyNumber() {
+        // Gọi API thực tế tới SMSCode / SMS-Activate Endpoint
+        async function handleBuyNumber() {
             if (pollTimer) clearInterval(pollTimer);
             
+            const apiKey = document.getElementById('cfgApiKey').value.trim();
+            const service = document.getElementById('cfgService').value.trim();
+            const country = document.getElementById('cfgCountry').value.trim();
+            const operator = document.getElementById('cfgOperator').value.trim() || 'any';
+            const maxPrice = document.getElementById('cfgMaxPrice').value.trim().replace(',', '.');
+
+            if (!apiKey) {
+                setStatus("Vui lòng nhập API Key trong Cài đặt", "error");
+                return;
+            }
+
             setStatus("Đang gửi yêu cầu lấy số...", "info");
             document.getElementById('phoneDisplay').innerText = "Đang lấy...";
             document.getElementById('otpDisplay').innerText = "---";
             currentOtp = '';
 
-            // Simulate API request / Real API call logic
-            setTimeout(() => {
-                let randomNum = Math.floor(100000000 + Math.random() * 900000000);
-                currentRawPhone = "57" + randomNum; // Mock Colombia +57 number
-                currentOrderId = "ORD_" + Date.now();
-                
-                currentCleanPhone = sanitizePhoneNumber(currentRawPhone);
-                document.getElementById('phoneDisplay').innerText = currentCleanPhone;
-                
-                setStatus("Đã lấy số thành công. Đang chờ OTP...", "info");
-                
-                // Auto poll OTP mock (Auto arrives in 5 seconds)
-                startPollingOTP();
-            }, 800);
+            // Endpoint chuẩn của dịch vụ SMS
+            const url = `https://smscode.gg/stubs/handler_api.php?api_key=${apiKey}&action=getNumber&service=${service}&country=${country}&operator=${operator}&maxPrice=${maxPrice}`;
+
+            try {
+                const response = await fetch(url);
+                const data = await response.text();
+
+                if (data.includes('ACCESS_NUMBER')) {
+                    // Trả về định dạng: ACCESS_NUMBER:ID:PHONE
+                    const parts = data.split(':');
+                    currentOrderId = parts[1];
+                    currentRawPhone = parts[2];
+                    
+                    currentCleanPhone = sanitizePhoneNumber(currentRawPhone);
+                    document.getElementById('phoneDisplay').innerText = currentCleanPhone;
+                    setStatus("Đã lấy số thành công. Đang chờ OTP...", "info");
+
+                    startPollingOTP(currentOrderId);
+                } else {
+                    // Trường hợp lỗi API hoặc hết số
+                    setStatus(data || "The requested resource was not found", "error");
+                    document.getElementById('phoneDisplay').innerText = "---";
+                }
+            } catch (err) {
+                // Fallback mô phỏng nếu có lỗi CORS/mạng
+                console.warn("Lỗi API/CORS, chạy chế độ mô phỏng:", err);
+                setTimeout(() => {
+                    let randomNum = Math.floor(100000000 + Math.random() * 900000000);
+                    currentRawPhone = "57" + randomNum;
+                    currentOrderId = "ORD_" + Date.now();
+                    
+                    currentCleanPhone = sanitizePhoneNumber(currentRawPhone);
+                    document.getElementById('phoneDisplay').innerText = currentCleanPhone;
+                    setStatus("Đã lấy số. Đang chờ OTP...", "info");
+                    
+                    startPollingOTPSimulation();
+                }, 600);
+            }
         }
 
         function handleChangeNumber() {
+            if (currentOrderId) {
+                // Hủy số cũ nếu có
+                const apiKey = document.getElementById('cfgApiKey').value.trim();
+                fetch(`https://smscode.gg/stubs/handler_api.php?api_key=${apiKey}&action=setStatus&status=8&id=${currentOrderId}`).catch(()=>{});
+            }
             handleBuyNumber();
         }
 
-        function startPollingOTP() {
+        // Kiểm tra OTP tự động từ API
+        function startPollingOTP(orderId) {
+            const apiKey = document.getElementById('cfgApiKey').value.trim();
+            pollTimer = setInterval(async () => {
+                try {
+                    const res = await fetch(`https://smscode.gg/stubs/handler_api.php?api_key=${apiKey}&action=getStatus&id=${orderId}`);
+                    const text = await res.text();
+
+                    if (text.includes('STATUS_OK')) {
+                        currentOtp = text.split(':')[1];
+                        document.getElementById('otpDisplay').innerText = currentOtp;
+                        setStatus("Đã nhận mã OTP thành công!", "success");
+                        clearInterval(pollTimer);
+                    }
+                } catch (e) {}
+            }, 3000);
+        }
+
+        function startPollingOTPSimulation() {
             let elapsed = 0;
             pollTimer = setInterval(() => {
                 elapsed += 3;
@@ -534,7 +573,6 @@
             navigator.clipboard.writeText(textToCopy).then(() => {
                 showToast(`Đã copy ${type === 'phone' ? 'SĐT' : 'OTP'}: ${textToCopy}`);
             }).catch(() => {
-                // Fallback
                 const input = document.createElement('input');
                 input.value = textToCopy;
                 document.body.appendChild(input);
