@@ -578,7 +578,8 @@
 
             try {
                 // Call API smscode.gg
-                let url = `https://api.smscode.gg/v1/user/buy?service=${service}&country=${country}&api_key=${apiKey}`;
+                const targetUrl = `https://api.smscode.gg/v1/user/buy?service=${service}&country=${country}&api_key=${apiKey}`;
+let url = `https://api.allorigins.win/raw?url=` + encodeURIComponent(targetUrl);
                 if (maxPrice) url += `&max_price=${maxPrice}`;
                 if (operator) url += `&operator=${operator}`;
 
