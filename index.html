@@ -171,7 +171,11 @@
             }
 
             if (!response.ok) {
-                throw new Error(data.message || data.error || JSON.stringify(data));
+                let errorMsg = data.message || data.error || responseText;
+                if (typeof errorMsg === 'object') {
+                    errorMsg = JSON.stringify(errorMsg);
+                }
+                throw new Error(errorMsg);
             }
             return data;
         }
@@ -205,7 +209,7 @@
 
                 const payload = {
                     product_id: numericProductId,
-                    max_price: String("0.013") // Ép kiểu chuỗi rõ ràng
+                    max_price: String("0.013")
                 };
 
                 const res = await callApi("/orders/create", "POST", payload);
