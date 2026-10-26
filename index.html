@@ -11,7 +11,9 @@
             --text-primary: #1f2937;
             --text-muted: #6b7280;
             --btn-buy-bg: #6366f1;
+            --btn-buy-hover: #4f46e5;
             --btn-change-bg: #ef4444;
+            --btn-change-hover: #dc2626;
             --btn-save-bg: #10b981;
             --border-dashed: #cbd5e1;
             --error-color: #ef4444;
@@ -42,6 +44,7 @@
             gap: 16px;
         }
 
+        /* Top Header */
         .header {
             display: flex;
             justify-content: space-between;
@@ -80,6 +83,7 @@
             opacity: 1;
         }
 
+        /* Main Control Card */
         .control-card {
             background: var(--card-bg);
             border-radius: 16px;
@@ -125,6 +129,7 @@
             background-color: var(--btn-change-bg);
         }
 
+        /* Status & Error Box */
         .status-box {
             display: none;
             align-items: center;
@@ -144,6 +149,7 @@
             display: flex;
         }
 
+        /* Display Card */
         .display-card {
             background: var(--card-bg);
             border-radius: 16px;
@@ -194,6 +200,7 @@
             background-color: #f5f3ff;
         }
 
+        /* Modal Settings */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -320,6 +327,7 @@
             padding: 12px;
         }
 
+        /* Toast notification */
         .toast {
             position: fixed;
             bottom: 20px;
@@ -344,6 +352,7 @@
 <body>
 
     <div class="app-container">
+        <!-- Header -->
         <div class="header">
             <div>
                 <div class="header-title">SMS</div>
@@ -352,14 +361,22 @@
             <button class="settings-icon-btn" id="openSettingsBtn" title="Cài đặt">⚙️</button>
         </div>
 
+        <!-- Main Buttons Card -->
         <div class="control-card">
             <div class="button-group">
-                <button class="btn btn-buy" id="buyBtn">🛒 MUA NGAY</button>
-                <button class="btn btn-change" id="changeBtn">🔄 ĐỔI SỐ</button>
+                <button class="btn btn-buy" id="buyBtn">
+                    🛒 MUA NGAY
+                </button>
+                <button class="btn btn-change" id="changeBtn">
+                    🔄 ĐỔI SỐ
+                </button>
             </div>
-            <div class="status-box" id="statusBox">The requested resource was not found</div>
+            <div class="status-box" id="statusBox">
+                ❌ The requested resource was not found
+            </div>
         </div>
 
+        <!-- Display Card -->
         <div class="display-card">
             <div class="field-group">
                 <div class="field-label">SỐ ĐIỆN THOẠI (Chạm để Copy)</div>
@@ -373,6 +390,7 @@
         </div>
     </div>
 
+    <!-- Modal Settings -->
     <div class="modal-overlay" id="settingsModal">
         <div class="modal-card">
             <div class="modal-header">
@@ -431,16 +449,21 @@
                 </div>
             </div>
 
-            <button class="btn btn-save" id="closeSettingsBtn">💾 ĐÓNG</button>
+            <button class="btn btn-save" id="closeSettingsBtn">
+                💾 ĐÓNG
+            </button>
         </div>
     </div>
 
+    <!-- Toast Component -->
     <div class="toast" id="toast">Đã chép vào bộ nhớ tạm!</div>
 
     <script>
+        // System state variables
         let currentOrder = null;
         let pollTimer = null;
 
+        // Elements
         const openSettingsBtn = document.getElementById('openSettingsBtn');
         const closeSettingsBtn = document.getElementById('closeSettingsBtn');
         const settingsModal = document.getElementById('settingsModal');
@@ -451,6 +474,7 @@
         const otpBox = document.getElementById('otpBox');
         const toast = document.getElementById('toast');
 
+        // Settings Inputs
         const cfgApiKey = document.getElementById('cfgApiKey');
         const cfgService = document.getElementById('cfgService');
         const cfgCountry = document.getElementById('cfgCountry');
@@ -458,13 +482,16 @@
         const cfgMaxPrice = document.getElementById('cfgMaxPrice');
         const cfgTrimPrefix = document.getElementById('cfgTrimPrefix');
         const cfgAddZero = document.getElementById('cfgAddZero');
+        const cfgApiAuth = document.getElementById('cfgApiAuth');
 
+        // Toast Helper
         function showToast(msg) {
             toast.textContent = msg;
             toast.classList.add('show');
             setTimeout(() => toast.classList.remove('show'), 2000);
         }
 
+        // Show Error Msg
         function showError(msg) {
             statusBox.textContent = "❌ " + msg;
             statusBox.classList.add('active');
@@ -474,6 +501,7 @@
             statusBox.classList.remove('active');
         }
 
+        // Modal Handlers
         openSettingsBtn.addEventListener('click', () => {
             settingsModal.classList.add('active');
         });
@@ -483,6 +511,7 @@
             showToast("Đã lưu cài đặt");
         });
 
+        // Copy functionality
         phoneBox.addEventListener('click', () => {
             const text = phoneBox.textContent.trim();
             if (text && text !== '---') {
@@ -499,6 +528,7 @@
             }
         });
 
+        // Process Phone Number Formatting
         function formatPhoneNumber(rawNumber) {
             let num = String(rawNumber).replace(/\D/g, '');
             const trimPrefix = cfgTrimPrefix.value.trim();
@@ -514,6 +544,7 @@
             return num;
         }
 
+        // Handle Buy Request
         buyBtn.addEventListener('click', async () => {
             clearError();
             phoneBox.textContent = "Đang lấy...";
@@ -528,12 +559,17 @@
             const operator = cfgOperator.value.trim();
 
             if (!apiKey) {
+                // Run Demo Mode if Key is missing
                 setTimeout(() => {
                     const demoRaw = "5731" + Math.floor(10000000 + Math.random() * 90000000);
-                    phoneBox.textContent = formatPhoneNumber(demoRaw);
+                    const formatted = formatPhoneNumber(demoRaw);
+                    phoneBox.textContent = formatted;
                     showToast("Đã lấy số (Demo)");
+
+                    // Simulate OTP delay
                     setTimeout(() => {
-                        otpBox.textContent = Math.floor(100000 + Math.random() * 900000);
+                        const fakeOtp = Math.floor(100000 + Math.random() * 900000);
+                        otpBox.textContent = fakeOtp;
                         showToast("Đã nhận mã OTP!");
                     }, 5000);
                 }, 600);
@@ -541,6 +577,7 @@
             }
 
             try {
+                // Call API smscode.gg
                 let url = `https://api.smscode.gg/v1/user/buy?service=${service}&country=${country}&api_key=${apiKey}`;
                 if (maxPrice) url += `&max_price=${maxPrice}`;
                 if (operator) url += `&operator=${operator}`;
@@ -557,8 +594,11 @@
 
                 if (response.ok && (data.phone || data.number || data.id)) {
                     currentOrder = data;
-                    phoneBox.textContent = formatPhoneNumber(data.phone || data.number);
+                    const rawPhone = data.phone || data.number;
+                    phoneBox.textContent = formatPhoneNumber(rawPhone);
                     showToast("Lấy số thành công!");
+                    
+                    // Start Polling OTP
                     startPollingOTP(data.id || data.order_id, apiKey);
                 } else {
                     showError(data.message || data.error || "The requested resource was not found");
@@ -570,10 +610,12 @@
             }
         });
 
+        // Change Phone Number Button
         changeBtn.addEventListener('click', () => {
             buyBtn.click();
         });
 
+        // Poll for OTP
         function startPollingOTP(orderId, apiKey) {
             if (!orderId) return;
 
