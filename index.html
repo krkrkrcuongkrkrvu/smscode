@@ -188,7 +188,6 @@
                 const catalogRes = await callApi("/catalog/products", "GET");
                 const products = Array.isArray(catalogRes) ? catalogRes : (catalogRes.data || catalogRes.products || []);
                 
-                // Thuật toán quét thông minh: tìm mọi sản phẩm chứa từ khóa Colombia/33 và TikTok/lf
                 const matchedProduct = products.find(p => {
                     const pStr = JSON.stringify(p).toLowerCase();
                     const isColombia = pStr.includes("colombia") || pStr.includes("33");
@@ -206,7 +205,7 @@
 
                 const payload = {
                     product_id: numericProductId,
-                    max_price: 0.013
+                    max_price: String("0.013") // Ép kiểu chuỗi rõ ràng
                 };
 
                 const res = await callApi("/orders/create", "POST", payload);
@@ -215,7 +214,6 @@
                     currentOrderId = res.id || res.order_id;
                     const rawPhone = res.phone || res.number; 
                     
-                    // Tự động cắt bỏ mã vùng 57 hoặc +57 của Colombia
                     const displayPhone = rawPhone.replace(/^\+?57/, '');
                     
                     document.getElementById('phone-number').innerText = displayPhone;
