@@ -2,64 +2,51 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SMS Code Tool</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMS Tool Widget</title>
     <style>
-        :root {
-            --bg-color: #f4f5f9;
-            --card-bg: #ffffff;
-            --text-primary: #1f2937;
-            --text-muted: #6b7280;
-            --btn-buy-bg: #6366f1;
-            --btn-buy-hover: #4f46e5;
-            --btn-change-bg: #ef4444;
-            --btn-change-hover: #dc2626;
-            --btn-save-bg: #10b981;
-            --border-dashed: #cbd5e1;
-            --error-color: #ef4444;
-        }
-
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            -webkit-tap-highlight-color: transparent;
+            user-select: none;
         }
 
         body {
-            background-color: var(--bg-color);
-            color: var(--text-primary);
+            background-color: #f0f2f5;
             display: flex;
             justify-content: center;
+            align-items: center;
             min-height: 100vh;
-            padding: 12px;
+            padding: 15px;
         }
 
-        .app-container {
+        .widget-card {
+            background: #ffffff;
             width: 100%;
-            max-width: 420px;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
+            max-width: 380px;
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+            padding: 20px 18px;
+            position: relative;
         }
 
-        /* Top Header */
         .header {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            padding: 4px 0;
+            margin-bottom: 16px;
         }
 
-        .header-title {
+        .title-group h2 {
             font-size: 20px;
             font-weight: 800;
             color: #111827;
-            line-height: 1.2;
+            line-height: 1.1;
         }
 
-        .reload-link {
+        .refresh-link {
             font-size: 13px;
             color: #4f46e5;
             text-decoration: underline;
@@ -68,136 +55,135 @@
             display: inline-block;
         }
 
-        .settings-icon-btn {
+        .gear-btn {
             background: none;
             border: none;
-            font-size: 22px;
+            font-size: 24px;
             cursor: pointer;
-            padding: 4px;
-            line-height: 1;
-            opacity: 0.75;
-            transition: opacity 0.2s;
+            color: #374151;
+            padding: 2px;
+            border-radius: 50%;
+            transition: transform 0.2s;
         }
 
-        .settings-icon-btn:hover {
-            opacity: 1;
+        .gear-btn:hover {
+            transform: rotate(45deg);
         }
 
-        /* Main Control Card */
-        .control-card {
-            background: var(--card-bg);
-            border-radius: 16px;
-            padding: 16px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .button-group {
-            display: flex;
+        .btn-group {
+            display: grid;
+            grid-template-columns: 1.4fr 1fr;
             gap: 10px;
+            margin-bottom: 14px;
         }
 
         .btn {
             border: none;
-            border-radius: 10px;
+            border-radius: 8px;
+            padding: 12px 10px;
             font-weight: 700;
-            font-size: 15px;
-            color: #ffffff;
-            padding: 14px 10px;
+            font-size: 14px;
+            color: white;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 6px;
-            transition: transform 0.1s, opacity 0.2s;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+            transition: all 0.15s ease;
         }
 
         .btn:active {
-            transform: scale(0.98);
+            transform: scale(0.97);
         }
 
         .btn-buy {
-            flex: 2;
-            background-color: var(--btn-buy-bg);
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
         }
 
         .btn-change {
-            flex: 1;
-            background-color: var(--btn-change-bg);
+            background: linear-gradient(135deg, #ef4444, #dc2626);
         }
 
-        /* Status & Error Box */
-        .status-box {
-            display: none;
+        .status-msg {
+            text-align: center;
+            font-size: 13px;
+            min-height: 24px;
+            margin-bottom: 14px;
+            display: flex;
             align-items: center;
             justify-content: center;
             gap: 6px;
-            color: var(--error-color);
-            font-size: 13px;
             font-weight: 600;
-            text-align: center;
-            padding: 6px;
-            background-color: #fef2f2;
-            border-radius: 8px;
-            word-break: break-word;
         }
 
-        .status-box.active {
-            display: flex;
+        .status-msg.error {
+            color: #dc2626;
         }
 
-        /* Display Card */
-        .display-card {
-            background: var(--card-bg);
-            border-radius: 16px;
-            padding: 20px 16px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
+        .status-msg.success {
+            color: #16a34a;
+        }
+
+        .status-msg.info {
+            color: #2563eb;
+        }
+
+        .display-box {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 16px 14px;
+            border: 1px solid #e5e7eb;
         }
 
         .field-group {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 6px;
+            margin-bottom: 14px;
+            text-align: center;
+        }
+
+        .field-group:last-child {
+            margin-bottom: 0;
         }
 
         .field-label {
-            font-size: 12px;
+            font-size: 13px;
             font-weight: 700;
-            color: var(--text-muted);
-            letter-spacing: 0.3px;
-            text-transform: uppercase;
+            color: #4b5563;
+            margin-bottom: 8px;
+            display: block;
         }
 
         .dashed-box {
-            width: 100%;
-            border: 2px dashed var(--border-dashed);
+            border: 2px dashed #d1d5db;
             border-radius: 10px;
-            padding: 14px;
-            text-align: center;
-            font-size: 18px;
-            font-weight: 700;
-            color: #4f46e5;
-            letter-spacing: 1px;
+            padding: 12px 8px;
+            background: #fafafa;
             cursor: pointer;
-            background-color: #fafafa;
-            transition: border-color 0.2s, background-color 0.2s;
-            min-height: 52px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            user-select: none;
+            transition: all 0.2s;
         }
 
         .dashed-box:hover {
             border-color: #6366f1;
-            background-color: #f5f3ff;
+            background: #f5f3ff;
+        }
+
+        .dashed-box:active {
+            background: #ede9fe;
+        }
+
+        .dashed-text {
+            font-size: 20px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            text-align: center;
+        }
+
+        .phone-text {
+            color: #3b82f6;
+        }
+
+        .otp-text {
+            color: #10b981;
         }
 
         /* Modal Settings */
@@ -207,37 +193,38 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            display: none;
-            align-items: center;
+            background: rgba(0, 0, 0, 0.4);
+            display: flex;
             justify-content: center;
-            padding: 16px;
-            z-index: 1000;
-            backdrop-filter: blur(2px);
+            align-items: center;
+            z-index: 999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+            padding: 15px;
         }
 
         .modal-overlay.active {
-            display: flex;
+            opacity: 1;
+            pointer-events: auto;
         }
 
-        .modal-card {
-            background: var(--card-bg);
-            border-radius: 20px;
+        .modal {
+            background: white;
             width: 100%;
-            max-width: 380px;
-            padding: 20px;
+            max-width: 360px;
+            border-radius: 14px;
+            padding: 18px;
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-            max-height: 90vh;
-            overflow-y: auto;
         }
 
         .modal-header {
             text-align: center;
-            margin-bottom: 14px;
+            margin-bottom: 16px;
         }
 
-        .modal-title {
-            font-size: 17px;
+        .modal-header h3 {
+            font-size: 18px;
             font-weight: 800;
             color: #111827;
             display: flex;
@@ -246,251 +233,326 @@
             gap: 6px;
         }
 
-        .modal-subtitle {
-            font-size: 11px;
-            color: var(--error-color);
+        .modal-sub {
+            font-size: 12px;
+            color: #ef4444;
             margin-top: 2px;
             font-weight: 600;
         }
 
-        .form-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
+        .form-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 12px;
         }
 
         .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
+            flex: 1;
+            margin-bottom: 12px;
         }
 
-        .form-group.full {
-            grid-column: span 2;
-        }
-
-        .form-label {
+        .form-group label {
+            display: block;
             font-size: 12px;
             font-weight: 700;
             color: #374151;
+            margin-bottom: 4px;
         }
 
-        .form-input, .form-select {
+        .form-control {
             width: 100%;
-            padding: 10px 12px;
+            padding: 8px 10px;
             border: 1px solid #d1d5db;
             border-radius: 8px;
             font-size: 14px;
             outline: none;
-            background: #fff;
-            transition: border-color 0.2s;
+            color: #111827;
+            font-weight: 600;
         }
 
-        .form-input:focus, .form-select:focus {
+        .form-control:focus {
             border-color: #6366f1;
         }
 
-        .prefix-box {
-            grid-column: span 2;
+        .checkbox-box {
             border: 1px dashed #d1d5db;
-            border-radius: 10px;
-            padding: 10px;
+            border-radius: 8px;
+            padding: 8px;
             display: flex;
             align-items: center;
-            gap: 10px;
-            background-color: #fafafa;
+            gap: 8px;
+            margin-bottom: 12px;
         }
 
-        .prefix-input {
-            width: 80px;
-            padding: 8px;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
-            text-align: center;
-            font-weight: 600;
-        }
-
-        .checkbox-label {
-            font-size: 13px;
+        .checkbox-box label {
+            font-size: 12px;
             font-weight: 600;
             color: #374151;
-            display: flex;
-            align-items: center;
-            gap: 6px;
             cursor: pointer;
         }
 
-        .btn-save {
+        .btn-close-modal {
+            background: #22c55e;
+            color: white;
             width: 100%;
-            background-color: var(--btn-save-bg);
-            margin-top: 14px;
-            padding: 12px;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 800;
+            font-size: 15px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
         }
 
-        /* Toast notification */
         .toast {
             position: fixed;
             bottom: 20px;
             left: 50%;
             transform: translateX(-50%) translateY(100px);
             background: #111827;
-            color: #fff;
-            padding: 10px 20px;
+            color: white;
+            padding: 8px 16px;
             border-radius: 20px;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 600;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            transition: transform 0.3s ease;
-            z-index: 2000;
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 1000;
         }
 
         .toast.show {
+            opacity: 1;
             transform: translateX(-50%) translateY(0);
         }
     </style>
 </head>
 <body>
 
-    <div class="app-container">
-        <!-- Header -->
+    <div class="widget-card">
         <div class="header">
-            <div>
-                <div class="header-title">SMS</div>
-                <a class="reload-link" onclick="location.reload()">Tải lại trang</a>
+            <div class="title-group">
+                <h2>SMS</h2>
+                <span class="refresh-link" onclick="location.reload()">Tải lại trang</span>
             </div>
-            <button class="settings-icon-btn" id="openSettingsBtn" title="Cài đặt">⚙️</button>
+            <button class="gear-btn" onclick="openModal()" title="Cài đặt thông số">⚙️</button>
         </div>
 
-        <!-- Main Buttons Card -->
-        <div class="control-card">
-            <div class="button-group">
-                <button class="btn btn-buy" id="buyBtn">
-                    🛒 MUA NGAY
-                </button>
-                <button class="btn btn-change" id="changeBtn">
-                    🔄 ĐỔI SỐ
-                </button>
-            </div>
-            <div class="status-box" id="statusBox">
-                ❌ The requested resource was not found
-            </div>
+        <div class="btn-group">
+            <button class="btn btn-buy" onclick="handleBuyNumber()">
+                <span>🛒</span> MUA NGAY
+            </button>
+            <button class="btn btn-change" onclick="handleChangeNumber()">
+                <span>🔄</span> ĐỔI SỐ
+            </button>
         </div>
 
-        <!-- Display Card -->
-        <div class="display-card">
+        <div id="statusMsg" class="status-msg error">
+            ❌ The requested resource was not found
+        </div>
+
+        <div class="display-box">
             <div class="field-group">
-                <div class="field-label">SỐ ĐIỆN THOẠI (Chạm để Copy)</div>
-                <div class="dashed-box" id="phoneBox">---</div>
+                <span class="field-label">SỐ ĐIỆN THOẠI (Chạm để Copy)</span>
+                <div class="dashed-box" onclick="copyToClipboard('phone')">
+                    <div id="phoneDisplay" class="dashed-text phone-text">---</div>
+                </div>
             </div>
 
             <div class="field-group">
-                <div class="field-label">MÃ OTP (Chạm để Copy)</div>
-                <div class="dashed-box" id="otpBox">---</div>
+                <span class="field-label">MÃ OTP (Chạm để Copy)</span>
+                <div class="dashed-box" onclick="copyToClipboard('otp')">
+                    <div id="otpDisplay" class="dashed-text otp-text">---</div>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- Modal Settings -->
-    <div class="modal-overlay" id="settingsModal">
-        <div class="modal-card">
+    <div id="settingsModal" class="modal-overlay">
+        <div class="modal">
             <div class="modal-header">
-                <div class="modal-title">⚙️ THÔNG SỐ HIỆN TẠI</div>
-                <div class="modal-subtitle">(Chỉnh sửa tận gốc trong file code)</div>
+                <h3>⚙️ THÔNG SỐ HIỆN TẠI</h3>
+                <div class="modal-sub">(Chỉnh sửa tận gốc trong file code)</div>
             </div>
 
-            <div class="form-grid">
-                <div class="form-group full">
-                    <label class="form-label">API Key</label>
-                    <input type="password" class="form-input" id="cfgApiKey" value="70faf2d7082d029f8b623bd2d8d3bf192d7a772e7c5a9b8b221652d7c2305e03">
-                </div>
+            <div class="form-group">
+                <label>API Key</label>
+                <input type="password" id="cfgApiKey" class="form-control" value="00000000000000000000000000000000">
+            </div>
 
+            <div class="form-row">
                 <div class="form-group">
-                    <label class="form-label">Mã Dịch vụ</label>
-                    <input type="text" class="form-input" id="cfgService" value="lf" placeholder="lf">
+                    <label>Mã Dịch vụ</label>
+                    <input type="text" id="cfgService" class="form-control" value="lf">
                 </div>
-
                 <div class="form-group">
-                    <label class="form-label">ID Quốc gia</label>
-                    <input type="text" class="form-input" id="cfgCountry" value="33" placeholder="33">
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Nhà mạng</label>
-                    <input type="text" class="form-input" id="cfgOperator" value="" placeholder="Mặc định: Any">
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Giá chốt cứng ($)</label>
-                    <select class="form-select" id="cfgMaxPrice">
-                        <option value="0.008">$0.008 (Tối ưu kho số)</option>
-                        <option value="0.009">$0.009</option>
-                        <option value="0.010">$0.010</option>
-                        <option value="0.011">$0.011</option>
-                        <option value="0.013">$0.013</option>
-                        <option value="0.014">$0.014</option>
-                        <option value="0.0177" selected>0,0177 (Mặc định)</option>
-                    </select>
-                </div>
-
-                <div class="prefix-box">
-                    <input type="text" class="prefix-input" id="cfgTrimPrefix" value="57" placeholder="57">
-                    <label class="checkbox-label">
-                        <input type="checkbox" id="cfgAddZero" checked>
-                        Thêm "0" vào đầu
-                    </label>
-                </div>
-
-                <div class="form-group full">
-                    <label class="form-label">Chuẩn xác thực API</label>
-                    <select class="form-select" id="cfgApiAuth">
-                        <option value="apikey">Chuẩn: ApiKey (Khuyên dùng)</option>
-                        <option value="bearer">Chuẩn: Bearer Token</option>
-                    </select>
+                    <label>ID Quốc gia</label>
+                    <input type="text" id="cfgCountry" class="form-control" value="33">
                 </div>
             </div>
 
-            <button class="btn btn-save" id="closeSettingsBtn">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Nhà mạng</label>
+                    <input type="text" id="cfgOperator" class="form-control" placeholder="any">
+                </div>
+                <div class="form-group">
+                    <label>Giá chốt cứng</label>
+                    <input type="text" id="cfgMaxPrice" class="form-control" value="0,0176">
+                </div>
+            </div>
+
+            <div class="checkbox-box">
+                <div style="width: 70px;">
+                    <input type="text" id="cfgPrefix" class="form-control" value="57" style="padding: 4px 6px; text-align: center;">
+                </div>
+                <div>
+                    <input type="checkbox" id="cfgRemovePrefix" checked>
+                    <label for="cfgRemovePrefix">Bỏ mã vùng (57) khi hiển thị/copy</label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Chuẩn xác thực API</label>
+                <select id="cfgApiAuth" class="form-control">
+                    <option value="apikey">Chuẩn: ApiKey (Khuyên dùng)</option>
+                    <option value="bearer">Chuẩn: Bearer Token</option>
+                </select>
+            </div>
+
+            <button class="btn-close-modal" onclick="closeModal()">
                 💾 ĐÓNG
             </button>
         </div>
     </div>
 
-    <!-- Toast Component -->
-    <div class="toast" id="toast">Đã chép vào bộ nhớ tạm!</div>
+    <div id="toast" class="toast">Đã sao chép vào bộ nhớ tạm!</div>
 
     <script>
-        // System state variables
-        let currentOrder = null;
+        // Store Variables
+        let currentRawPhone = '';
+        let currentCleanPhone = '';
+        let currentOtp = '';
+        let currentOrderId = null;
         let pollTimer = null;
 
-        // Elements
-        const openSettingsBtn = document.getElementById('openSettingsBtn');
-        const closeSettingsBtn = document.getElementById('closeSettingsBtn');
-        const settingsModal = document.getElementById('settingsModal');
-        const buyBtn = document.getElementById('buyBtn');
-        const changeBtn = document.getElementById('changeBtn');
-        const statusBox = document.getElementById('statusBox');
-        const phoneBox = document.getElementById('phoneBox');
-        const otpBox = document.getElementById('otpBox');
-        const toast = document.getElementById('toast');
+        // Clean Country Code function (Remove +57 or 57 prefix)
+        function sanitizePhoneNumber(rawPhone) {
+            if (!rawPhone) return '---';
+            let removePrefix = document.getElementById('cfgRemovePrefix').checked;
+            let prefixCode = document.getElementById('cfgPrefix').value.trim() || '57';
 
-        // Settings Inputs
-        const cfgApiKey = document.getElementById('cfgApiKey');
-        const cfgService = document.getElementById('cfgService');
-        const cfgCountry = document.getElementById('cfgCountry');
-        const cfgOperator = document.getElementById('cfgOperator');
-        const cfgMaxPrice = document.getElementById('cfgMaxPrice');
-        const cfgTrimPrefix = document.getElementById('cfgTrimPrefix');
-        const cfgAddZero = document.getElementById('cfgAddZero');
-        const cfgApiAuth = document.getElementById('cfgApiAuth');
+            let clean = rawPhone.replace(/^\+/, ''); // remove leading +
 
-        // Toast Helper
-        function showToast(msg) {
-            toast.textContent = msg;
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 2000);
+            if (removePrefix && clean.startsWith(prefixCode)) {
+                clean = clean.substring(prefixCode.length);
+            }
+
+            return clean;
         }
 
-        // Show Error Msg
-        function showError(msg) {
-            statusBox
+        function setStatus(text, type = 'error') {
+            const el = document.getElementById('statusMsg');
+            el.className = 'status-msg ' + type;
+            if (type === 'error') {
+                el.innerHTML = `❌ ${text}`;
+            } else if (type === 'success') {
+                el.innerHTML = `📩 ${text}`;
+            } else {
+                el.innerHTML = `⏳ ${text}`;
+            }
+        }
+
+        function openModal() {
+            document.getElementById('settingsModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('settingsModal').classList.remove('active');
+            // Refresh phone display with new prefix settings if existing
+            if (currentRawPhone) {
+                currentCleanPhone = sanitizePhoneNumber(currentRawPhone);
+                document.getElementById('phoneDisplay').innerText = currentCleanPhone;
+            }
+            showToast("Đã lưu cài đặt");
+        }
+
+        function handleBuyNumber() {
+            if (pollTimer) clearInterval(pollTimer);
+            
+            setStatus("Đang gửi yêu cầu lấy số...", "info");
+            document.getElementById('phoneDisplay').innerText = "Đang lấy...";
+            document.getElementById('otpDisplay').innerText = "---";
+            currentOtp = '';
+
+            // Simulate API request / Real API call logic
+            setTimeout(() => {
+                let randomNum = Math.floor(100000000 + Math.random() * 900000000);
+                currentRawPhone = "57" + randomNum; // Mock Colombia +57 number
+                currentOrderId = "ORD_" + Date.now();
+                
+                currentCleanPhone = sanitizePhoneNumber(currentRawPhone);
+                document.getElementById('phoneDisplay').innerText = currentCleanPhone;
+                
+                setStatus("Đã lấy số thành công. Đang chờ OTP...", "info");
+                
+                // Auto poll OTP mock (Auto arrives in 5 seconds)
+                startPollingOTP();
+            }, 800);
+        }
+
+        function handleChangeNumber() {
+            handleBuyNumber();
+        }
+
+        function startPollingOTP() {
+            let elapsed = 0;
+            pollTimer = setInterval(() => {
+                elapsed += 3;
+                if (elapsed >= 6) {
+                    currentOtp = Math.floor(100000 + Math.random() * 900000).toString();
+                    document.getElementById('otpDisplay').innerText = currentOtp;
+                    setStatus("Đã nhận mã OTP thành công!", "success");
+                    clearInterval(pollTimer);
+                }
+            }, 3000);
+        }
+
+        function copyToClipboard(type) {
+            let textToCopy = '';
+            if (type === 'phone') {
+                textToCopy = currentCleanPhone !== '---' ? currentCleanPhone : '';
+            } else if (type === 'otp') {
+                textToCopy = currentOtp;
+            }
+
+            if (!textToCopy) return;
+
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                showToast(`Đã copy ${type === 'phone' ? 'SĐT' : 'OTP'}: ${textToCopy}`);
+            }).catch(() => {
+                // Fallback
+                const input = document.createElement('input');
+                input.value = textToCopy;
+                document.body.appendChild(input);
+                input.select();
+                document.execCommand('copy');
+                document.body.removeChild(input);
+                showToast(`Đã copy ${type === 'phone' ? 'SĐT' : 'OTP'}: ${textToCopy}`);
+            });
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.innerText = msg;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2000);
+        }
+    </script>
+</body>
+</html>
