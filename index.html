@@ -1,291 +1,528 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SMS Code - Lấy Số Colombia (v2)</title>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #f4f5f9;
-            margin: 0;
-            padding: 20px;
-        }
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            margin-top: 10px;
-        }
-        .header h1 {
-            font-size: 20px;
-            margin: 0;
-            color: #000;
-        }
-        .header a {
-            font-size: 13px;
-            color: #6a5acd;
-            text-decoration: underline;
-        }
-        .gear-icon {
-            font-size: 24px;
-            color: #555;
-            cursor: pointer;
-        }
-        .card {
-            background-color: #ffffff;
-            border-radius: 12px;
-            padding: 16px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            margin-bottom: 20px;
-        }
-        .btn-container {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 12px;
-        }
-        .btn {
-            border: none;
-            border-radius: 8px;
-            padding: 14px;
-            font-size: 15px;
-            font-weight: bold;
-            color: white;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-        }
-        .btn-buy {
-            flex: 2;
-            background: linear-gradient(135deg, #7b68ee, #6a5acd);
-        }
-        .btn-change {
-            flex: 1;
-            background: #ff5252;
-        }
-        .status {
-            text-align: center;
-            font-size: 13px;
-            color: #ff5252;
-            font-weight: 500;
-            margin-top: 10px;
-            word-break: break-all;
-            padding: 0 10px;
-        }
-        .data-box {
-            border: 2px dashed #e0e0e0;
-            border-radius: 12px;
-            padding: 16px;
-            text-align: center;
-            margin-bottom: 16px;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        .data-box:last-child {
-            margin-bottom: 0;
-        }
-        .data-box:active {
-            background-color: #f9f9f9;
-        }
-        .label {
-            font-size: 13px;
-            color: #888;
-            margin-bottom: 8px;
-            font-weight: 500;
-        }
-        .value {
-            font-size: 18px;
-            font-weight: bold;
-        }
-        .val-phone {
-            color: #6a5acd;
-        }
-        .val-otp {
-            color: #4caf50;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SMS OTP - Hero SMS</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: #f1f3f7;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding: 15px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 380px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: 0 5px;
+    }
+
+    .header-left h1 {
+      font-size: 20px;
+      font-weight: 800;
+      color: #111827;
+      line-height: 1.2;
+    }
+
+    .header-left a {
+      font-size: 13px;
+      color: #3b82f6;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+
+    .header-right .settings-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 24px;
+      color: #374151;
+      padding: 2px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.2s;
+    }
+
+    .header-right .settings-btn:hover {
+      transform: rotate(45deg);
+    }
+
+    /* Cards */
+    .card {
+      background: #ffffff;
+      border-radius: 14px;
+      padding: 16px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+
+    /* Action Buttons */
+    .btn-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .btn {
+      flex: 1;
+      border: none;
+      border-radius: 10px;
+      padding: 12px 0;
+      font-size: 15px;
+      font-weight: 700;
+      color: #ffffff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+      transition: opacity 0.15s, transform 0.1s;
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .btn-buy {
+      background: #6366f1; /* Tím xanh */
+      flex: 1.4;
+    }
+
+    .btn-cancel {
+      background: #ef4444; /* Đỏ cam */
+      flex: 1;
+    }
+
+    .status-text {
+      text-align: center;
+      font-size: 13px;
+      font-weight: 600;
+      color: #ef4444; /* Mặc định đỏ như ảnh */
+      min-height: 18px;
+    }
+
+    /* Result Section */
+    .result-group {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .field-block {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      width: 100%;
+    }
+
+    .field-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #374151;
+    }
+
+    .dashed-box {
+      width: 100%;
+      border: 1.5px dashed #cbd5e1;
+      border-radius: 8px;
+      padding: 14px 10px;
+      text-align: center;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      user-select: none;
+      transition: background-color 0.15s, border-color 0.15s;
+    }
+
+    .dashed-box:hover {
+      background-color: #f8fafc;
+      border-color: #94a3b8;
+    }
+
+    .text-phone {
+      color: #6366f1;
+      letter-spacing: 0.5px;
+    }
+
+    .text-otp {
+      color: #10b981;
+      letter-spacing: 2px;
+      font-size: 18px;
+    }
+
+    /* Toast Notification */
+    .toast {
+      position: fixed;
+      bottom: 25px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1f2937;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 12px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s;
+      z-index: 100;
+    }
+
+    .toast.show {
+      opacity: 1;
+    }
+
+    /* Settings Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.4);
+      justify-content: center;
+      align-items: center;
+      z-index: 99;
+      padding: 15px;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      width: 100%;
+      max-width: 350px;
+    }
+
+    .modal-content h3 {
+      font-size: 16px;
+      margin-bottom: 12px;
+      color: #111827;
+    }
+
+    .modal-content label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: #4b5563;
+      margin-top: 8px;
+      margin-bottom: 3px;
+    }
+
+    .modal-content input {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 13px;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .modal-actions button {
+      padding: 7px 14px;
+      border-radius: 6px;
+      border: none;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .btn-save {
+      background: #6366f1;
+      color: white;
+      font-weight: 600;
+    }
+
+    .btn-close {
+      background: #e5e7eb;
+      color: #374151;
+    }
+  </style>
 </head>
 <body>
 
+  <div class="container">
+    <!-- Header -->
     <div class="header">
-        <div>
-            <h1>SMS</h1>
-            <a href="#" onclick="location.reload()">Tải lại trang</a>
-        </div>
-        <div class="gear-icon">⚙️</div>
+      <div class="header-left">
+        <h1>SMS</h1>
+        <a onclick="location.reload()">Tải lại trang</a>
+      </div>
+      <div class="header-right">
+        <button class="settings-btn" onclick="openSettings()" title="Cài đặt">⚙️</button>
+      </div>
     </div>
 
+    <!-- Nút hành động -->
     <div class="card">
-        <div class="btn-container">
-            <button class="btn btn-buy" onclick="buyNumber()">🛒 MUA NGAY</button>
-            <button class="btn btn-change" onclick="changeNumber()">🔄 ĐỔI SỐ</button>
-        </div>
-        <div class="status" id="status">Sẵn sàng</div>
+      <div class="btn-group">
+        <button id="btnBuy" class="btn btn-buy" onclick="buyNumber()">
+          🛒 MUA NGAY
+        </button>
+        <button id="btnCancel" class="btn btn-cancel" onclick="changeNumber()">
+          🔄 ĐỔI SỐ
+        </button>
+      </div>
+      <div id="statusText" class="status-text">Sẵn sàng</div>
     </div>
 
-    <div class="card">
-        <div class="data-box" onclick="copyText('phone-number')">
-            <div class="label">SỐ ĐIỆN THOẠI (Chạm để Copy)</div>
-            <div class="value val-phone" id="phone-number">---</div>
+    <!-- Kết quả -->
+    <div class="card result-group">
+      <div class="field-block">
+        <div class="field-label">SỐ ĐIỆN THOẠI (Chạm để Copy)</div>
+        <div id="boxPhone" class="dashed-box text-phone" onclick="copyToClipboard('phone')">
+          ---
         </div>
-        <div class="data-box" onclick="copyText('otp-code')">
-            <div class="label">MÃ OTP (Chạm để Copy)</div>
-            <div class="value val-otp" id="otp-code">---</div>
+      </div>
+
+      <div class="field-block">
+        <div class="field-label">MÃ OTP (Chạm để Copy)</div>
+        <div id="boxOtp" class="dashed-box text-otp" onclick="copyToClipboard('otp')">
+          ---
         </div>
+      </div>
     </div>
+  </div>
 
-    <script>
-        const API_KEY = "f18864a9e3bca73be351b55b04233da621b350f2489deb53bd67756361697806";
-        const WORKER_URL = "https://smsproxy.mimomaq.workers.dev?url=";
-        
-        let currentOrderId = null;
-        let pollInterval = null;
+  <!-- Thông báo copy -->
+  <div id="toast" class="toast">Đã sao chép!</div>
 
-        async function callApi(endpoint, method = "GET", bodyData = null) {
-            const targetUrl = `https://api.smscode.gg/v2${endpoint}`;
-            const proxyUrl = WORKER_URL + encodeURIComponent(targetUrl);
-            
-            const options = {
-                method: method,
-                headers: {
-                    "Authorization": `Bearer ${API_KEY}`,
-                    "Content-Type": "application/json",
-                    "Accept": "application/json"
-                }
-            };
-            if (bodyData) {
-                options.body = JSON.stringify(bodyData);
-            }
+  <!-- Modal Cài đặt cấu hình -->
+  <div id="settingsModal" class="modal">
+    <div class="modal-content">
+      <h3>Cài đặt API</h3>
+      <label>API Key:</label>
+      <input type="text" id="cfgApiKey" value="c57579fb8d850494cfb275Ade1126ef4">
 
-            const response = await fetch(proxyUrl, options);
-            const responseText = await response.text();
-            
-            let data;
-            try {
-                data = JSON.parse(responseText);
-            } catch (e) {
-                data = { message: responseText };
-            }
+      <label>Mã Dịch vụ (TikTok = lf):</label>
+      <input type="text" id="cfgService" value="lf">
 
-            if (!response.ok) {
-                let errorMsg = data.message || data.error || responseText;
-                if (typeof errorMsg === 'object') {
-                    errorMsg = JSON.stringify(errorMsg);
-                }
-                throw new Error(errorMsg);
-            }
-            return data;
+      <label>ID Quốc gia (Colombia = 34):</label>
+      <input type="text" id="cfgCountry" value="34">
+
+      <label>Giá tối đa ($):</label>
+      <input type="text" id="cfgPrice" value="0.021">
+
+      <label>CORS Proxy (để trống nếu không dùng):</label>
+      <input type="text" id="cfgProxy" value="https://corsproxy.io/?">
+
+      <div class="modal-actions">
+        <button class="btn-close" onclick="closeSettings()">Đóng</button>
+        <button class="btn-save" onclick="saveSettings()">Lưu lại</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Cấu hình mặc định
+    let config = {
+      apiKey: localStorage.getItem('hero_apiKey') || 'c57579fb8d850494cfb275Ade1126ef4',
+      service: localStorage.getItem('hero_service') || 'lf',       // TikTok/Douyin
+      country: localStorage.getItem('hero_country') || '34',       // Colombia (ID 34 trên hệ thống SMS-Activate/HeroSMS)
+      maxPrice: localStorage.getItem('hero_maxPrice') || '0.021',
+      corsProxy: localStorage.getItem('hero_corsProxy') || 'https://corsproxy.io/?'
+    };
+
+    let currentActivationId = null;
+    let currentPhoneNumber = '';
+    let currentOtp = '';
+    let pollingTimer = null;
+
+    const btnBuy = document.getElementById('btnBuy');
+    const btnCancel = document.getElementById('btnCancel');
+    const statusText = document.getElementById('statusText');
+    const boxPhone = document.getElementById('boxPhone');
+    const boxOtp = document.getElementById('boxOtp');
+    const toast = document.getElementById('toast');
+
+    // Hàm gọi API của hero-sms qua Proxy
+    async function callHeroApi(params) {
+      const url = `https://hero-sms.com/stubs/handler_api.php?api_key=${encodeURIComponent(config.apiKey)}&${params}`;
+      const finalUrl = config.corsProxy ? (config.corsProxy + encodeURIComponent(url)) : url;
+
+      const res = await fetch(finalUrl);
+      if (!res.ok) throw new Error(`HTTP Error ${res.status}`);
+      return await res.text();
+    }
+
+    // Cập nhật trạng thái hiển thị
+    function setStatus(text, color = '#ef4444') {
+      statusText.innerText = text;
+      statusText.style.color = color;
+    }
+
+    // 1. Mua số mới
+    async function buyNumber() {
+      stopPolling();
+      btnBuy.disabled = true;
+      setStatus('Đang mua số mới...', '#3b82f6');
+      boxPhone.innerText = 'Đang tải...';
+      boxOtp.innerText = '---';
+
+      try {
+        const query = `action=getNumber&service=${config.service}&country=${config.country}&maxPrice=${config.maxPrice}`;
+        const resp = (await callHeroApi(query)).trim();
+
+        // Định dạng trả về: ACCESS_NUMBER:$id:$number
+        if (resp.startsWith('ACCESS_NUMBER')) {
+          const parts = resp.split(':');
+          currentActivationId = parts[1];
+          currentPhoneNumber = parts[2];
+
+          boxPhone.innerText = currentPhoneNumber;
+          setStatus('Chờ nhận OTP...', '#eab308');
+          startPollingOtp();
+        } else {
+          // Các lỗi phổ biến: NO_NUMBERS, NO_BALANCE, BAD_KEY, etc.
+          setStatus(`Lỗi: ${resp}`, '#ef4444');
+          boxPhone.innerText = '---';
         }
+      } catch (err) {
+        setStatus('Lỗi kết nối API / CORS', '#ef4444');
+        boxPhone.innerText = '---';
+        console.error(err);
+      } finally {
+        btnBuy.disabled = false;
+      }
+    }
 
-        async function buyNumber() {
-            if (pollInterval) clearInterval(pollInterval);
-            
-            document.getElementById('status').innerText = "Đang quét danh mục sản phẩm...";
-            document.getElementById('status').style.color = "#ff5252";
-            document.getElementById('phone-number').innerText = "---";
-            document.getElementById('otp-code').innerText = "---";
-            
-            try {
-                const catalogRes = await callApi("/catalog/products", "GET");
-                const products = Array.isArray(catalogRes) ? catalogRes : (catalogRes.data || catalogRes.products || []);
-                
-                const matchedProduct = products.find(p => {
-                    const pStr = JSON.stringify(p).toLowerCase();
-                    const isColombia = pStr.includes("colombia") || pStr.includes("33");
-                    const isTikTok = pStr.includes("lf") || pStr.includes("tiktok") || pStr.includes("tik");
-                    return isColombia && isTikTok;
-                });
+    // 2. Đổi số (Hủy số hiện tại và mua số mới)
+    async function changeNumber() {
+      if (!currentActivationId) {
+        buyNumber();
+        return;
+      }
 
-                if (!matchedProduct) {
-                    throw new Error("Không tìm thấy sản phẩm TikTok tại Colombia trong danh mục.");
-                }
+      stopPolling();
+      btnCancel.disabled = true;
+      setStatus('Đang hủy số và hoàn tiền...', '#ef4444');
 
-                const numericProductId = Number(matchedProduct.id || matchedProduct.product_id || matchedProduct.catalog_product_id);
+      try {
+        // status 8: Hủy kích hoạt / không nhận được mã
+        await callHeroApi(`action=setStatus&status=8&id=${currentActivationId}`);
+      } catch (e) {
+        console.warn('Lỗi khi hủy:', e);
+      }
 
-                document.getElementById('status').innerText = "Đang mua số...";
+      currentActivationId = null;
+      btnCancel.disabled = false;
+      buyNumber();
+    }
 
-                const payload = {
-                    product_id: numericProductId,
-                    max_price: String("0.013")
-                };
+    // 3. Vòng lặp kiểm tra mã OTP
+    function startPollingOtp() {
+      if (!currentActivationId) return;
 
-                const res = await callApi("/orders/create", "POST", payload);
-                
-                if (res && (res.id || res.order_id)) {
-                    currentOrderId = res.id || res.order_id;
-                    const rawPhone = res.phone || res.number; 
-                    
-                    const displayPhone = rawPhone.replace(/^\+?57/, '');
-                    
-                    document.getElementById('phone-number').innerText = displayPhone;
-                    document.getElementById('status').innerText = "Đang chờ OTP...";
-                    document.getElementById('status').style.color = "#4caf50";
-                    
-                    pollInterval = setInterval(checkOTP, 5000);
-                } else {
-                    document.getElementById('status').innerText = "Phản hồi: " + JSON.stringify(res);
-                }
-            } catch (err) {
-                document.getElementById('status').innerText = "Lỗi: " + err.message;
-                document.getElementById('status').style.color = "#ff5252";
-            }
+      pollingTimer = setInterval(async () => {
+        try {
+          const resp = (await callHeroApi(`action=getStatus&id=${currentActivationId}`)).trim();
+
+          if (resp.startsWith('STATUS_OK')) {
+            // Định dạng: STATUS_OK:123456
+            const otp = resp.split(':')[1];
+            currentOtp = otp;
+            boxOtp.innerText = otp;
+            setStatus('Đã có mã OTP!', '#10b981');
+            stopPolling();
+          } else if (resp === 'STATUS_WAIT_CODE') {
+            setStatus('Đang chờ gửi mã...', '#3b82f6');
+          } else if (resp === 'STATUS_CANCEL') {
+            setStatus('Số đã bị hủy', '#ef4444');
+            stopPolling();
+          }
+        } catch (e) {
+          console.error('Lỗi khi poll OTP:', e);
         }
+      }, 3000); // Kiểm tra lại mỗi 3 giây
+    }
 
-        async function checkOTP() {
-            if (!currentOrderId) return;
-            try {
-                const res = await callApi(`/orders/${currentOrderId}`, "GET");
-                
-                if (res && (res.status === "completed" || res.sms_code || res.code)) {
-                    const otpCode = res.sms_code || res.code;
-                    document.getElementById('otp-code').innerText = otpCode;
-                    document.getElementById('status').innerText = "Đã nhận mã OTP!";
-                    document.getElementById('status').style.color = "#4caf50";
-                    clearInterval(pollInterval); 
-                } else if (res && res.status === "cancelled") {
-                    document.getElementById('status').innerText = "Đơn hàng đã bị hủy";
-                    document.getElementById('status').style.color = "#ff5252";
-                    clearInterval(pollInterval);
-                }
-            } catch (err) {
-                console.error("Lỗi khi kiểm tra mã OTP", err);
-            }
-        }
+    function stopPolling() {
+      if (pollingTimer) {
+        clearInterval(pollingTimer);
+        pollingTimer = null;
+      }
+    }
 
-        async function changeNumber() {
-            if (pollInterval) {
-                clearInterval(pollInterval);
-                pollInterval = null;
-            }
-            
-            if (currentOrderId) {
-                try {
-                    await callApi(`/orders/cancel`, "POST", { id: currentOrderId });
-                } catch (e) {
-                    console.error("Lỗi khi hủy đơn", e);
-                }
-                currentOrderId = null;
-            }
-            
-            document.getElementById('status').innerText = "Sẵn sàng";
-            document.getElementById('status').style.color = "#ff5252";
-            document.getElementById('phone-number').innerText = "---";
-            document.getElementById('otp-code').innerText = "---";
-        }
+    // Copy vào bộ nhớ tạm
+    function copyToClipboard(type) {
+      let val = '';
+      if (type === 'phone') {
+        val = currentPhoneNumber || (boxPhone.innerText !== '---' ? boxPhone.innerText : '');
+      } else if (type === 'otp') {
+        val = currentOtp || (boxOtp.innerText !== '---' ? boxOtp.innerText : '');
+      }
 
-        function copyText(elementId) {
-            const text = document.getElementById(elementId).innerText;
-            if (text && text !== "---") {
-                navigator.clipboard.writeText(text).then(() => {
-                    alert("Đã copy: " + text);
-                }).catch(err => {
-                    console.error('Lỗi sao chép:', err);
-                });
-            }
-        }
-    </script>
+      if (!val || val === '---' || val === 'Đang tải...') return;
+
+      navigator.clipboard.writeText(val).then(() => {
+        toast.innerText = `Đã sao chép: ${val}`;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 1600);
+      });
+    }
+
+    // Cài đặt Modal
+    function openSettings() {
+      document.getElementById('cfgApiKey').value = config.apiKey;
+      document.getElementById('cfgService').value = config.service;
+      document.getElementById('cfgCountry').value = config.country;
+      document.getElementById('cfgPrice').value = config.maxPrice;
+      document.getElementById('cfgProxy').value = config.corsProxy;
+      document.getElementById('settingsModal').style.display = 'flex';
+    }
+
+    function closeSettings() {
+      document.getElementById('settingsModal').style.display = 'none';
+    }
+
+    function saveSettings() {
+      config.apiKey = document.getElementById('cfgApiKey').value.trim();
+      config.service = document.getElementById('cfgService').value.trim();
+      config.country = document.getElementById('cfgCountry').value.trim();
+      config.maxPrice = document.getElementById('cfgPrice').value.trim();
+      config.corsProxy = document.getElementById('cfgProxy').value.trim();
+
+      localStorage.setItem('hero_apiKey', config.apiKey);
+      localStorage.setItem('hero_service', config.service);
+      localStorage.setItem('hero_country', config.country);
+      localStorage.setItem('hero_maxPrice', config.maxPrice);
+      localStorage.setItem('hero_corsProxy', config.corsProxy);
+
+      closeSettings();
+      setStatus('Đã lưu cài đặt mới', '#10b981');
+    }
+  </script>
 </body>
 </html>
