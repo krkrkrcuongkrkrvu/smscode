@@ -179,16 +179,32 @@
         async function buyNumber() {
             if (pollInterval) clearInterval(pollInterval);
             
-            document.getElementById('status').innerText = "Đang lấy số...";
+            document.getElementById('status').innerText = "Đang tìm sản phẩm...";
             document.getElementById('status').style.color = "#ff5252";
             document.getElementById('phone-number').innerText = "---";
             document.getElementById('otp-code').innerText = "---";
             
             try {
-                // Thử gửi payload tạo đơn theo chuẩn v2
+                // 1. Tự động lấy danh sách sản phẩm để tìm đúng ID số nguyên của TikTok (lf) tại Colombia (33)
+                const catalogRes = await callApi("/catalog/products", "GET");
+                const products = Array.isArray(catalogRes) ? catalogRes : (catalogRes.data || catalogRes.products || []);
+                
+                const matchedProduct = products.find(p => 
+                    (p.country_id == 33 || p.country?.id == 33) && 
+                    (p.service_code === "lf" || p.service === "lf" || p.service?.code === "lf" || p.code === "lf")
+                );
+
+                if (!matchedProduct) {
+                    throw new Error("Không tìm thấy sản phẩm TikTok tại Colombia trong danh mục.");
+                }
+
+                const numericProductId = Number(matchedProduct.id || matchedProduct.product_id || matchedProduct.catalog_product_id);
+
+                document.getElementById('status').innerText = "Đang mua số...";
+
+                // 2. Gửi yêu cầu tạo đơn hàng với product_id chuẩn dạng số nguyên (integer)
                 const payload = {
-                    country_id: 33,
-                    product_id: "lf",
+                    product_id: numericProductId,
                     max_price: 0.013
                 };
 
@@ -209,7 +225,7 @@
                     document.getElementById('status').innerText = "Phản hồi: " + JSON.stringify(res);
                 }
             } catch (err) {
-                document.getElementById('status').innerText = "Lỗi từ Server: " + err.message;
+                document.getElementById('status').innerText = "Lỗi: " + err.message;
                 document.getElementById('status').style.color = "#ff5252";
             }
         }
@@ -244,28 +260,4 @@
             if (currentOrderId) {
                 try {
                     await callApi(`/orders/cancel`, "POST", { id: currentOrderId });
-                } catch (e) {
-                    console.error("Lỗi khi hủy đơn", e);
-                }
-                currentOrderId = null;
-            }
-            
-            document.getElementById('status').innerText = "Sẵn sàng";
-            document.getElementById('status').style.color = "#ff5252";
-            document.getElementById('phone-number').innerText = "---";
-            document.getElementById('otp-code').innerText = "---";
-        }
-
-        function copyText(elementId) {
-            const text = document.getElementById(elementId).innerText;
-            if (text && text !== "---") {
-                navigator.clipboard.writeText(text).then(() => {
-                    alert("Đã copy: " + text);
-                }).catch(err => {
-                    console.error('Lỗi sao chép:', err);
-                });
-            }
-        }
-    </script>
-</body>
-</html>
+                } catch (e
