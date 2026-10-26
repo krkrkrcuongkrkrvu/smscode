@@ -76,6 +76,7 @@
             font-size: 14px;
             color: #ff5252;
             font-weight: 500;
+            margin-top: 10px;
         }
 
         /* Thông tin số và OTP */
@@ -114,7 +115,6 @@
 </head>
 <body>
 
-    <!-- Tiêu đề giống hình 3 -->
     <div class="header">
         <div>
             <h1>SMS</h1>
@@ -123,7 +123,6 @@
         <div class="gear-icon">⚙️</div>
     </div>
 
-    <!-- Khu vực nút điều khiển -->
     <div class="card">
         <div class="btn-container">
             <button class="btn btn-buy" onclick="buyNumber()">🛒 MUA NGAY</button>
@@ -132,7 +131,6 @@
         <div class="status" id="status">Sẵn sàng</div>
     </div>
 
-    <!-- Khu vực hiển thị -->
     <div class="card">
         <div class="data-box" onclick="copyText('phone-number')">
             <div class="label">SỐ ĐIỆN THOẠI (Chạm để Copy)</div>
@@ -145,59 +143,60 @@
     </div>
 
     <script>
-        // Cấu hình token và thông số dịch vụ (TikTok, Colombia)
         const API_KEY = "ed8067a560491d024696615e45960a72058f3ced03adf152f5f10a45473c20c2";
-        const COUNTRY_ID = "33"; // 33 là ID chuẩn của Colombia theo định dạng sms-activate
-        const SERVICE_ID = "lf"; // lf là mã chuẩn cho TikTok / Douyin
+        const COUNTRY_ID = "33"; 
+        const SERVICE_ID = "lf"; 
         
         let currentOrderId = null;
         let pollInterval = null;
 
+        // Hàm bọc url qua CORS Proxy
+        function getProxyUrl(targetUrl) {
+            return `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
+        }
+
         async function buyNumber() {
-            // Xoá vòng lặp cũ nếu đang có
             if (pollInterval) clearInterval(pollInterval);
             
-            // Cập nhật giao diện chờ
             document.getElementById('status').innerText = "Đang lấy số...";
             document.getElementById('status').style.color = "#ff5252";
             document.getElementById('phone-number').innerText = "---";
             document.getElementById('otp-code').innerText = "---";
             
             try {
-                // Gọi API lấy số
-                const url = `https://api.smscode.gg/stubs/handler_api.php?api_key=${API_KEY}&action=getNumber&service=${SERVICE_ID}&country=${COUNTRY_ID}`;
-                const response = await fetch(url);
+                const targetUrl = `https://api.smscode.gg/stubs/handler_api.php?api_key=${API_KEY}&action=getNumber&service=${SERVICE_ID}&country=${COUNTRY_ID}`;
+                
+                // Gọi API thông qua Proxy trung gian
+                const response = await fetch(getProxyUrl(targetUrl));
                 const text = await response.text();
                 
                 if (text.startsWith("ACCESS_NUMBER")) {
                     const parts = text.split(":");
                     currentOrderId = parts[1];
-                    const rawPhone = parts[2]; // VD: 573001234567
+                    const rawPhone = parts[2]; 
                     
-                    // Logic lọc đầu số 57 hoặc +57 ra khỏi chuỗi
                     const displayPhone = rawPhone.replace(/^\+?57/, '');
                     
-                    // Hiển thị lên web
                     document.getElementById('phone-number').innerText = displayPhone;
                     document.getElementById('status').innerText = "Đang chờ OTP...";
                     document.getElementById('status').style.color = "#4caf50";
                     
-                    // Bắt đầu vòng lặp 5 giây / 1 lần để quét lấy OTP
                     pollInterval = setInterval(checkOTP, 5000);
                 } else {
-                    document.getElementById('status').innerText = "Lỗi: " + text;
+                    document.getElementById('status').innerText = "Lỗi từ server: " + text;
                     document.getElementById('status').style.color = "#ff5252";
                 }
             } catch (err) {
-                document.getElementById('status').innerText = "Lỗi kết nối với API";
+                document.getElementById('status').innerText = "Lỗi CORS/Mạng. Xem console để biết chi tiết.";
+                console.error(err);
             }
         }
 
         async function checkOTP() {
             if (!currentOrderId) return;
             try {
-                const url = `https://api.smscode.gg/stubs/handler_api.php?api_key=${API_KEY}&action=getStatus&id=${currentOrderId}`;
-                const response = await fetch(url);
+                const targetUrl = `https://api.smscode.gg/stubs/handler_api.php?api_key=${API_KEY}&action=getStatus&id=${currentOrderId}`;
+                const response = await fetch(getProxyUrl(targetUrl));
                 const text = await response.text();
                 
                 if (text.startsWith("STATUS_OK")) {
@@ -205,20 +204,18 @@
                     document.getElementById('otp-code').innerText = otpCode;
                     document.getElementById('status').innerText = "Đã nhận mã OTP!";
                     document.getElementById('status').style.color = "#4caf50";
-                    clearInterval(pollInterval); // Dừng quét khi đã có OTP
+                    clearInterval(pollInterval); 
                 } else if (text === "STATUS_CANCEL") {
                     document.getElementById('status').innerText = "Đơn hàng đã bị hủy";
                     document.getElementById('status').style.color = "#ff5252";
                     clearInterval(pollInterval);
                 }
-                // Nếu trả về STATUS_WAIT_CODE thì hàm sẽ lặp lại ở lần quét sau
             } catch (err) {
                 console.error("Lỗi khi kiểm tra mã OTP", err);
             }
         }
 
         async function changeNumber() {
-            // Dừng vòng lặp quét OTP
             if (pollInterval) {
                 clearInterval(pollInterval);
                 pollInterval = null;
@@ -226,16 +223,14 @@
             
             if (currentOrderId) {
                 try {
-                    // Gửi lệnh setStatus=8 lên server để hủy / bỏ qua đơn cũ
-                    const url = `https://api.smscode.gg/stubs/handler_api.php?api_key=${API_KEY}&action=setStatus&status=8&id=${currentOrderId}`;
-                    fetch(url); 
+                    const targetUrl = `https://api.smscode.gg/stubs/handler_api.php?api_key=${API_KEY}&action=setStatus&status=8&id=${currentOrderId}`;
+                    fetch(getProxyUrl(targetUrl)); 
                 } catch (e) {
-                    console.error("Lỗi khi báo hủy đơn lên server", e);
+                    console.error("Lỗi khi báo hủy", e);
                 }
                 currentOrderId = null;
             }
             
-            // Trả giao diện về ban đầu
             document.getElementById('status').innerText = "Sẵn sàng";
             document.getElementById('status').style.color = "#ff5252";
             document.getElementById('phone-number').innerText = "---";
@@ -246,7 +241,6 @@
             const text = document.getElementById(elementId).innerText;
             if (text && text !== "---") {
                 navigator.clipboard.writeText(text).then(() => {
-                    // Bạn có thể tùy chỉnh thông báo ở đây nếu không thích dùng alert mặc định
                     alert("Đã copy: " + text);
                 }).catch(err => {
                     console.error('Lỗi sao chép:', err);
