@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SMS Tool Widget</title>
+    <title>SMS Tool Widget - Brazil</title>
     <style>
         * {
             box-sizing: border-box;
@@ -330,8 +330,8 @@
             </button>
         </div>
 
-        <div id="statusMsg" class="status-msg error">
-            Sẵn sàng lấy số TikTok Colombia
+        <div id="statusMsg" class="status-msg info">
+            Sẵn sàng lấy số TikTok Brazil ($0.009)
         </div>
 
         <div class="display-box">
@@ -361,7 +361,6 @@
 
             <div class="form-group">
                 <label>API Key</label>
-                <!-- Đã chèn API Key của bạn sẵn ở đây -->
                 <input type="text" id="cfgApiKey" class="form-control" value="2c5c76cee43b00d14cff031182a0bdc2382435a00439f3ee320e8c3978dbe6ea">
             </div>
 
@@ -372,7 +371,8 @@
                 </div>
                 <div class="form-group">
                     <label>ID Quốc gia</label>
-                    <input type="text" id="cfgCountry" class="form-control" value="33">
+                    <!-- ID 2 là mã quốc gia Brazil -->
+                    <input type="text" id="cfgCountry" class="form-control" value="2">
                 </div>
             </div>
 
@@ -383,17 +383,19 @@
                 </div>
                 <div class="form-group">
                     <label>Giá chốt cứng</label>
-                    <input type="text" id="cfgMaxPrice" class="form-control" value="0,0176">
+                    <!-- Cập nhật giá chốt cứng 0.009 -->
+                    <input type="text" id="cfgMaxPrice" class="form-control" value="0.009">
                 </div>
             </div>
 
             <div class="checkbox-box">
                 <div style="width: 70px;">
-                    <input type="text" id="cfgPrefix" class="form-control" value="57" style="padding: 4px 6px; text-align: center;">
+                    <!-- Mã vùng Brazil là 55 -->
+                    <input type="text" id="cfgPrefix" class="form-control" value="55" style="padding: 4px 6px; text-align: center;">
                 </div>
                 <div>
                     <input type="checkbox" id="cfgRemovePrefix" checked>
-                    <label for="cfgRemovePrefix">Thêm "0" vào đầu / Lọc mã vùng (57)</label>
+                    <label for="cfgRemovePrefix">Bỏ mã vùng (55) khi hiển thị/copy</label>
                 </div>
             </div>
 
@@ -420,11 +422,11 @@
         let currentOrderId = null;
         let pollTimer = null;
 
-        // Hàm cắt mã vùng 57 ở đầu số
+        // Hàm cắt mã quốc gia/vùng (ví dụ 55 của Brazil) ở đầu số
         function sanitizePhoneNumber(rawPhone) {
             if (!rawPhone) return '---';
             let removePrefix = document.getElementById('cfgRemovePrefix').checked;
-            let prefixCode = document.getElementById('cfgPrefix').value.trim() || '57';
+            let prefixCode = document.getElementById('cfgPrefix').value.trim() || '55';
 
             let clean = rawPhone.toString().replace(/^\+/, '');
 
@@ -460,7 +462,7 @@
             showToast("Đã lưu cài đặt");
         }
 
-        // Gọi API thực tế tới SMSCode / SMS-Activate Endpoint
+        // Gọi API thực tế tới SMSCode
         async function handleBuyNumber() {
             if (pollTimer) clearInterval(pollTimer);
             
@@ -480,7 +482,6 @@
             document.getElementById('otpDisplay').innerText = "---";
             currentOtp = '';
 
-            // Endpoint chuẩn của dịch vụ SMS
             const url = `https://smscode.gg/stubs/handler_api.php?api_key=${apiKey}&action=getNumber&service=${service}&country=${country}&operator=${operator}&maxPrice=${maxPrice}`;
 
             try {
@@ -488,7 +489,6 @@
                 const data = await response.text();
 
                 if (data.includes('ACCESS_NUMBER')) {
-                    // Trả về định dạng: ACCESS_NUMBER:ID:PHONE
                     const parts = data.split(':');
                     currentOrderId = parts[1];
                     currentRawPhone = parts[2];
@@ -499,21 +499,19 @@
 
                     startPollingOTP(currentOrderId);
                 } else {
-                    // Trường hợp lỗi API hoặc hết số
                     setStatus(data || "The requested resource was not found", "error");
                     document.getElementById('phoneDisplay').innerText = "---";
                 }
             } catch (err) {
-                // Fallback mô phỏng nếu có lỗi CORS/mạng
                 console.warn("Lỗi API/CORS, chạy chế độ mô phỏng:", err);
                 setTimeout(() => {
                     let randomNum = Math.floor(100000000 + Math.random() * 900000000);
-                    currentRawPhone = "57" + randomNum;
+                    currentRawPhone = "55" + randomNum; // Mô phỏng đầu số Brazil (+55)
                     currentOrderId = "ORD_" + Date.now();
                     
                     currentCleanPhone = sanitizePhoneNumber(currentRawPhone);
                     document.getElementById('phoneDisplay').innerText = currentCleanPhone;
-                    setStatus("Đã lấy số. Đang chờ OTP...", "info");
+                    setStatus("Đã lấy số (Demo Brazil). Đang chờ OTP...", "info");
                     
                     startPollingOTPSimulation();
                 }, 600);
@@ -522,14 +520,12 @@
 
         function handleChangeNumber() {
             if (currentOrderId) {
-                // Hủy số cũ nếu có
                 const apiKey = document.getElementById('cfgApiKey').value.trim();
                 fetch(`https://smscode.gg/stubs/handler_api.php?api_key=${apiKey}&action=setStatus&status=8&id=${currentOrderId}`).catch(()=>{});
             }
             handleBuyNumber();
         }
 
-        // Kiểm tra OTP tự động từ API
         function startPollingOTP(orderId) {
             const apiKey = document.getElementById('cfgApiKey').value.trim();
             pollTimer = setInterval(async () => {
