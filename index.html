@@ -147,37 +147,16 @@
         const COUNTRY_ID = "33"; // Colombia
         const SERVICE_ID = "lf"; // TikTok / Douyin
         
+        // 👉 THAY LINK CLOUDFLARE WORKER CỦA BẠN VÀO DƯỚI ĐÂY:
+        const WORKER_URL = "ĐIỀN_LINK_WORKER_CỦA_BẠN_VÀO_ĐÂY?url=";
+        
         let currentOrderId = null;
         let pollInterval = null;
 
-        // Hàm gọi API thông qua nhiều tầng Proxy dự phòng để tránh lỗi Timeout
         async function fetchWithProxy(targetUrl) {
-            const proxies = [
-                `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`,
-                `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}`,
-                `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`
-            ];
-
-            for (let proxyUrl of proxies) {
-                try {
-                    const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 6000); // Quá 6 giây tự động đổi proxy khác
-                    
-                    const response = await fetch(proxyUrl, { signal: controller.signal });
-                    clearTimeout(timeoutId);
-                    
-                    if (response.ok) {
-                        const text = await response.text();
-                        // Kiểm tra nếu trả về dữ liệu hợp lệ (không phải trang lỗi của proxy)
-                        if (text && !text.includes("Oops") && !text.includes("<!DOCTYPE html>")) {
-                            return text;
-                        }
-                    }
-                } catch (e) {
-                    console.warn("Proxy lỗi, đang thử proxy tiếp theo...", e);
-                }
-            }
-            throw new Error("Các máy chủ trung gian đang quá tải. Vui lòng bấm MUA NGAY lại.");
+            const response = await fetch(WORKER_URL + encodeURIComponent(targetUrl));
+            if (!response.ok) throw new Error(`Lỗi HTTP: ${response.status}`);
+            return await response.text();
         }
 
         async function buyNumber() {
@@ -198,7 +177,7 @@
                     currentOrderId = parts[1];
                     const rawPhone = parts[2]; // Ví dụ: 573001234567
                     
-                    // Tự động cắt bỏ đầu số 57 hoặc +57 của Colombia
+                    // Tự động bỏ đầu số 57 hoặc +57 của Colombia
                     const displayPhone = rawPhone.replace(/^\+?57/, '');
                     
                     document.getElementById('phone-number').innerText = displayPhone;
@@ -211,7 +190,7 @@
                     document.getElementById('status').style.color = "#ff5252";
                 }
             } catch (err) {
-                document.getElementById('status').innerText = err.message;
+                document.getElementById('status').innerText = "Lỗi: " + err.message;
                 document.getElementById('status').style.color = "#ff5252";
             }
         }
