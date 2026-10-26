@@ -151,89 +151,7 @@
             const options = {
                 method: method,
                 headers: {
-                    "Authorization": `Bearer ${API_KEY}`,
-                    "Content-Type": "application/json",
-                    "Accept": "application/json"
-                }
-            };
-            if (bodyData) {
-                options.body = JSON.stringify(bodyData);
-            }
-
-            const response = await fetch(proxyUrl, options);
-            const responseText = await response.text();
-            
-            let data;
-            try {
-                data = JSON.parse(responseText);
-            } catch (e) {
-                data = { message: responseText };
-            }
-
-            if (!response.ok) {
-                throw new Error(data.message || data.error || JSON.stringify(data));
-            }
-            return data;
-        }
-
-        async function buyNumber() {
-            if (pollInterval) clearInterval(pollInterval);
-            
-            document.getElementById('status').innerText = "Đang tìm sản phẩm...";
-            document.getElementById('status').style.color = "#ff5252";
-            document.getElementById('phone-number').innerText = "---";
-            document.getElementById('otp-code').innerText = "---";
-            
-            try {
-                // 1. Tự động lấy danh sách sản phẩm để tìm đúng ID số nguyên của TikTok (lf) tại Colombia (33)
-                const catalogRes = await callApi("/catalog/products", "GET");
-                const products = Array.isArray(catalogRes) ? catalogRes : (catalogRes.data || catalogRes.products || []);
-                
-                const matchedProduct = products.find(p => 
-                    (p.country_id == 33 || p.country?.id == 33) && 
-                    (p.service_code === "lf" || p.service === "lf" || p.service?.code === "lf" || p.code === "lf")
-                );
-
-                if (!matchedProduct) {
-                    throw new Error("Không tìm thấy sản phẩm TikTok tại Colombia trong danh mục.");
-                }
-
-                const numericProductId = Number(matchedProduct.id || matchedProduct.product_id || matchedProduct.catalog_product_id);
-
-                document.getElementById('status').innerText = "Đang mua số...";
-
-                // 2. Gửi yêu cầu tạo đơn hàng với product_id chuẩn dạng số nguyên (integer)
-                const payload = {
-                    product_id: numericProductId,
-                    max_price: 0.013
-                };
-
-                const res = await callApi("/orders/create", "POST", payload);
-                
-                if (res && (res.id || res.order_id)) {
-                    currentOrderId = res.id || res.order_id;
-                    const rawPhone = res.phone || res.number; 
-                    
-                    const displayPhone = rawPhone.replace(/^\+?57/, '');
-                    
-                    document.getElementById('phone-number').innerText = displayPhone;
-                    document.getElementById('status').innerText = "Đang chờ OTP...";
-                    document.getElementById('status').style.color = "#4caf50";
-                    
-                    pollInterval = setInterval(checkOTP, 5000);
-                } else {
-                    document.getElementById('status').innerText = "Phản hồi: " + JSON.stringify(res);
-                }
-            } catch (err) {
-                document.getElementById('status').innerText = "Lỗi: " + err.message;
-                document.getElementById('status').style.color = "#ff5252";
-            }
-        }
-
-        async function checkOTP() {
-            if (!currentOrderId) return;
-            try {
-                const res = await callApi(`/orders/${currentOrderId}`, "GET");
+                    "Authorization": `Bearer ${API_KEY}`, "Content-Type": "application/json", "Accept": "application/json" } }; if (bodyData) { options.body = JSON.stringify(bodyData); }  const response = await fetch(proxyUrl, options); const responseText = await response.text();  let data; try { data = JSON.parse(responseText); } catch (e) { data = { message: responseText }; }  if (!response.ok) { throw new Error(data.message \vert{}\vert{} data.error \vert{}\vert{} JSON.stringify(data)); } return data; }  async function buyNumber() { if (pollInterval) clearInterval(pollInterval);  document.getElementById('status').innerText = "Đang quét danh mục sản phẩm..."; document.getElementById('status').style.color = "#ff5252"; document.getElementById('phone-number').innerText = "---"; document.getElementById('otp-code').innerText = "---";  try { const catalogRes = await callApi("/catalog/products", "GET"); const products = Array.isArray(catalogRes) ? catalogRes : (catalogRes.data \vert{}\vert{} catalogRes.products \vert{}\vert{} []);  // Tìm kiếm linh hoạt dựa trên mã quốc gia (33) và từ khóa dịch vụ (lf / tiktok) const matchedProduct = products.find(p => { const countryId = p.country_id \vert{}\vert{} p.country?.id \vert{}\vert{} p.country; const countryName = String(p.country_name \vert{}\vert{} p.country?.name \vert{}\vert{} "").toLowerCase();  const isColombia = (countryId == 33 \vert{}\vert{} countryName.includes("colombia"));  const serviceCode = String(p.service_code \vert{}\vert{} p.service \vert{}\vert{} p.code \vert{}\vert{} p.name \vert{}\vert{} "").toLowerCase(); const isTikTok = serviceCode.includes("lf") \vert{}\vert{} serviceCode.includes("tiktok");  return isColombia && isTikTok; });  if (!matchedProduct) { throw new Error("Không tìm thấy sản phẩm TikTok tại Colombia trong danh mục."); }  const numericProductId = Number(matchedProduct.id \vert{}\vert{} matchedProduct.product_id \vert{}\vert{} matchedProduct.catalog_product_id);  document.getElementById('status').innerText = "Đang mua số...";  const payload = { product_id: numericProductId, max_price: 0.013 };  const res = await callApi("/orders/create", "POST", payload);  if (res && (res.id \vert{}\vert{} res.order_id)) { currentOrderId = res.id \vert{}\vert{} res.order_id; const rawPhone = res.phone \vert{}\vert{} res.number;  // Tự động cắt bỏ mã vùng 57 hoặc +57 của Colombia const displayPhone = rawPhone.replace(/^\+?57/, '');  document.getElementById('phone-number').innerText = displayPhone; document.getElementById('status').innerText = "Đang chờ OTP..."; document.getElementById('status').style.color = "#4caf50";  pollInterval = setInterval(checkOTP, 5000); } else { document.getElementById('status').innerText = "Phản hồi: " + JSON.stringify(res); } } catch (err) { document.getElementById('status').innerText = "Lỗi: " + err.message; document.getElementById('status').style.color = "#ff5252"; } }  async function checkOTP() { if (!currentOrderId) return; try { const res = await callApi(`/orders/${currentOrderId}`, "GET");
                 
                 if (res && (res.status === "completed" || res.sms_code || res.code)) {
                     const otpCode = res.sms_code || res.code;
@@ -259,29 +177,4 @@
             
             if (currentOrderId) {
                 try {
-                    await callApi(`/orders/cancel`, "POST", { id: currentOrderId });
-                } catch (e) {
-                    console.error("Lỗi khi hủy đơn", e);
-                }
-                currentOrderId = null;
-            }
-            
-            document.getElementById('status').innerText = "Sẵn sàng";
-            document.getElementById('status').style.color = "#ff5252";
-            document.getElementById('phone-number').innerText = "---";
-            document.getElementById('otp-code').innerText = "---";
-        }
-
-        function copyText(elementId) {
-            const text = document.getElementById(elementId).innerText;
-            if (text && text !== "---") {
-                navigator.clipboard.writeText(text).then(() => {
-                    alert("Đã copy: " + text);
-                }).catch(err => {
-                    console.error('Lỗi sao chép:', err);
-                });
-            }
-        }
-    </script>
-</body>
-</html>
+                    await callApi(`/orders/cancel
