@@ -260,4 +260,28 @@
             if (currentOrderId) {
                 try {
                     await callApi(`/orders/cancel`, "POST", { id: currentOrderId });
-                } catch (e
+                } catch (e) {
+                    console.error("Lỗi khi hủy đơn", e);
+                }
+                currentOrderId = null;
+            }
+            
+            document.getElementById('status').innerText = "Sẵn sàng";
+            document.getElementById('status').style.color = "#ff5252";
+            document.getElementById('phone-number').innerText = "---";
+            document.getElementById('otp-code').innerText = "---";
+        }
+
+        function copyText(elementId) {
+            const text = document.getElementById(elementId).innerText;
+            if (text && text !== "---") {
+                navigator.clipboard.writeText(text).then(() => {
+                    alert("Đã copy: " + text);
+                }).catch(err => {
+                    console.error('Lỗi sao chép:', err);
+                });
+            }
+        }
+    </script>
+</body>
+</html>
